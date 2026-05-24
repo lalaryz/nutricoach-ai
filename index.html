@@ -1,100 +1,961 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <title>NutriCoach AI Master</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NutriCoach AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F7F5F0;
+    --surface: #FFFFFF;
+    --surface2: #F0EDE6;
+    --green: #2D6A4F;
+    --green-light: #52B788;
+    --green-pale: #D8F3DC;
+    --accent: #F4A261;
+    --accent-pale: #FFF0E0;
+    --text: #1B1B1B;
+    --text-muted: #7A7A72;
+    --border: #E5E0D8;
+    --red: #C1440E;
+    --red-pale: #FFE8E0;
+    --radius: 20px;
+    --radius-sm: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sora', sans-serif; background: var(--bg); color: var(--text); min-height: 100dvh; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; position: relative; }
+
+  /* === HEADER === */
+  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .header-brand { display: flex; align-items: center; gap: 10px; }
+  .header-logo { width: 34px; height: 34px; background: var(--green); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .header-title { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--green); }
+  .header-title span { color: var(--accent); }
+  .header-actions { display: flex; gap: 8px; }
+  .icon-btn { background: var(--surface2); border: none; border-radius: 10px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; transition: background .2s; }
+  .icon-btn:hover { background: var(--green-pale); }
+
+  /* === TABS === */
+  .tabs { display: flex; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .tab { flex: 1; padding: 12px 8px; font-size: 11px; font-weight: 600; text-align: center; cursor: pointer; color: var(--text-muted); border-bottom: 2px solid transparent; transition: all .2s; letter-spacing: .3px; }
+  .tab.active { color: var(--green); border-bottom-color: var(--green); }
+
+  /* === PAGES === */
+  .page { display: none; flex: 1; overflow-y: auto; }
+  .page.active { display: block; }
+
+  /* === CHAT PAGE === */
+  .today-summary { margin: 16px; background: var(--surface); border-radius: var(--radius); padding: 16px; border: 1px solid var(--border); }
+  .today-summary h3 { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 12px; }
+  .nutrients-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .nutrient-chip { background: var(--surface2); border-radius: var(--radius-sm); padding: 8px 6px; text-align: center; }
+  .nutrient-val { font-size: 15px; font-weight: 700; color: var(--green); display: block; }
+  .nutrient-lbl { font-size: 9px; color: var(--text-muted); font-weight: 500; }
+  .nutrient-chip.cal { background: var(--green-pale); }
+  .nutrient-chip.cal .nutrient-val { color: var(--green); }
+
+  .chat-area { margin: 0 16px; margin-bottom: 140px; display: flex; flex-direction: column; gap: 12px; padding-bottom: 8px; }
+  .msg { max-width: 85%; }
+  .msg.ai { align-self: flex-start; }
+  .msg.user { align-self: flex-end; }
+  .msg-bubble { padding: 12px 16px; border-radius: 18px; font-size: 13px; line-height: 1.6; }
+  .msg.ai .msg-bubble { background: var(--surface); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+  .msg.user .msg-bubble { background: var(--green); color: white; border-bottom-right-radius: 4px; }
+  .msg-time { font-size: 10px; color: var(--text-muted); margin-top: 4px; padding: 0 4px; }
+  .msg.user .msg-time { text-align: right; }
+  .msg-img { max-width: 200px; border-radius: 14px; margin-bottom: 6px; display: block; }
+
+  .ai-thinking { display: flex; gap: 5px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; border-bottom-left-radius: 4px; width: fit-content; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green-light); animation: bounce 1.2s infinite; }
+  .dot:nth-child(2) { animation-delay: .2s; }
+  .dot:nth-child(3) { animation-delay: .4s; }
+  @keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-8px); } }
+
+  .input-area { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: var(--surface); border-top: 1px solid var(--border); padding: 12px 16px 20px; z-index: 50; }
+  .input-row { display: flex; gap: 8px; align-items: flex-end; }
+  .input-tools { display: flex; gap: 6px; }
+  .tool-btn { background: var(--surface2); border: none; border-radius: 10px; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; flex-shrink: 0; transition: background .2s; }
+  .tool-btn:hover { background: var(--green-pale); }
+  .msg-input { flex: 1; background: var(--surface2); border: 1.5px solid var(--border); border-radius: 14px; padding: 11px 14px; font-family: 'Sora', sans-serif; font-size: 13px; outline: none; resize: none; line-height: 1.5; max-height: 100px; transition: border-color .2s; }
+  .msg-input:focus { border-color: var(--green-light); }
+  .send-btn { background: var(--green); color: white; border: none; border-radius: 14px; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; flex-shrink: 0; transition: opacity .2s; }
+  .send-btn:hover { opacity: .85; }
+
+  /* === CALENDAR PAGE === */
+  .calendar-wrap { padding: 16px; }
+  .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .cal-header h2 { font-family: 'DM Serif Display', serif; font-size: 20px; }
+  .cal-nav { display: flex; gap: 8px; }
+  .cal-nav button { background: var(--surface2); border: none; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; font-size: 14px; }
+  .cal-grid-header { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; text-align: center; margin-bottom: 8px; }
+  .cal-day-name { font-size: 10px; font-weight: 600; color: var(--text-muted); padding: 4px 0; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
+  .cal-day { aspect-ratio: 1; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; cursor: pointer; position: relative; transition: background .2s; }
+  .cal-day:hover { background: var(--green-pale); }
+  .cal-day.today { background: var(--green); color: white; font-weight: 700; }
+  .cal-day.has-data::after { content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; border-radius: 50%; background: var(--accent); }
+  .cal-day.today::after { background: white; }
+  .cal-day.other-month { color: var(--border); }
+  .cal-day.selected { outline: 2px solid var(--green-light); }
+
+  .day-detail { background: var(--surface); border-radius: var(--radius); padding: 16px; margin-top: 16px; border: 1px solid var(--border); }
+  .day-detail h3 { font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--green); }
+  .detail-nutrients { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; margin-bottom: 12px; }
+  .detail-chip { background: var(--surface2); border-radius: 10px; padding: 10px 12px; }
+  .detail-chip-label { font-size: 10px; color: var(--text-muted); font-weight: 500; }
+  .detail-chip-val { font-size: 16px; font-weight: 700; color: var(--text); }
+  .detail-chip-unit { font-size: 11px; color: var(--text-muted); }
+  .meal-log-list { display: flex; flex-direction: column; gap: 6px; }
+  .meal-log-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+  .meal-log-item:last-child { border-bottom: none; }
+  .meal-log-name { font-weight: 500; }
+  .meal-log-cal { color: var(--text-muted); font-size: 11px; }
+  .no-data { text-align: center; color: var(--text-muted); font-size: 13px; padding: 24px 0; }
+
+  /* === PROFILE PAGE === */
+  .profile-wrap { padding: 16px; }
+  .profile-section { background: var(--surface); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; border: 1px solid var(--border); }
+  .section-title { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .section-title span { font-size: 16px; }
+  .form-row { margin-bottom: 12px; }
+  .form-label { font-size: 12px; font-weight: 500; color: var(--text-muted); margin-bottom: 6px; display: block; }
+  .form-input { width: 100%; background: var(--surface2); border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 14px; font-family: 'Sora', sans-serif; font-size: 13px; outline: none; transition: border-color .2s; }
+  .form-input:focus { border-color: var(--green-light); }
+  .form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237A7A72' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
+  .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .checklist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .check-item { display: flex; align-items: center; gap: 8px; background: var(--surface2); border-radius: 10px; padding: 10px 12px; cursor: pointer; transition: background .2s; border: 1.5px solid transparent; }
+  .check-item.active { background: var(--green-pale); border-color: var(--green-light); }
+  .check-item input { display: none; }
+  .check-icon { width: 18px; height: 18px; border-radius: 5px; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 11px; transition: all .2s; }
+  .check-item.active .check-icon { background: var(--green); border-color: var(--green); color: white; }
+  .check-label { font-size: 12px; font-weight: 500; }
+  .save-btn { width: 100%; background: var(--green); color: white; border: none; border-radius: var(--radius-sm); padding: 14px; font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity .2s; margin-top: 4px; }
+  .save-btn:hover { opacity: .88; }
+  .api-key-wrap { display: flex; gap: 8px; }
+  .api-key-input { flex: 1; }
+  .show-key-btn { background: var(--surface2); border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 12px; cursor: pointer; font-size: 14px; }
+  .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: var(--green); color: white; padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 500; z-index: 999; opacity: 0; transition: opacity .3s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+  .status-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; padding: 4px 10px; border-radius: 20px; font-weight: 600; }
+  .status-badge.ok { background: var(--green-pale); color: var(--green); }
+  .status-badge.warn { background: var(--accent-pale); color: #C05A00; }
+  .status-badge.err { background: var(--red-pale); color: var(--red); }
+
+  /* === MARKDOWN-LIKE RENDERING === */
+  .msg-bubble p { margin-bottom: 6px; }
+  .msg-bubble p:last-child { margin-bottom: 0; }
+  .msg-bubble strong { font-weight: 700; }
+  .msg-bubble .nutrient-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .msg-bubble .n-tag { background: var(--green-pale); color: var(--green); border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 600; }
+  .msg-bubble .warn-box { background: var(--accent-pale); border-left: 3px solid var(--accent); border-radius: 6px; padding: 8px 12px; margin: 8px 0; font-size: 12px; }
+  .msg-bubble .tip-box { background: var(--green-pale); border-left: 3px solid var(--green-light); border-radius: 6px; padding: 8px 12px; margin: 8px 0; font-size: 12px; }
+  .msg-bubble ul { padding-left: 16px; margin: 6px 0; }
+  .msg-bubble li { margin-bottom: 3px; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+</style>
 </head>
-<body class="bg-slate-50 min-h-screen pb-20">
-    <div class="max-w-xl mx-auto p-4 space-y-4">
-        <div class="flex justify-between items-center">
-            <h1 class="font-bold text-lg text-emerald-700">NutriCoach AI</h1>
-            <div class="flex gap-2">
-                <button onclick="document.getElementById('modal-riwayat').classList.remove('hidden')" class="bg-white p-2 rounded-xl shadow text-xs">📅</button>
-                <button onclick="document.getElementById('modal-profil').classList.remove('hidden')" class="bg-emerald-600 text-white p-2 px-4 rounded-xl text-xs font-bold">Profil</button>
-            </div>
-        </div>
+<body>
 
-        <div class="bg-white p-6 rounded-3xl border shadow-sm">
-            <div class="grid grid-cols-2 gap-4 text-center">
-                <div class="bg-emerald-50 p-4 rounded-2xl">Cal: <span id="v-cal" class="font-bold block text-lg">0</span></div>
-                <div class="bg-blue-50 p-4 rounded-2xl">Prot: <span id="v-prot" class="font-bold block text-lg">0g</span></div>
-            </div>
-        </div>
+<div class="header">
+  <div class="header-brand">
+    <div class="header-logo">🌿</div>
+    <div class="header-title">Nutri<span>Coach</span> AI</div>
+  </div>
+  <div class="header-actions">
+    <button class="icon-btn" onclick="switchTab('kalender')" title="Riwayat">📅</button>
+    <button class="icon-btn" onclick="switchTab('profil')" title="Profil">👤</button>
+  </div>
+</div>
 
-        <div id="chat" class="h-80 overflow-y-auto space-y-4 p-2 text-xs">
-            <div class="bg-slate-200 p-3 rounded-2xl">Halo! Saya coach gizimu. Apa yang kamu makan hari ini? Ceritakan juga perasaanmu.</div>
-        </div>
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('chat')" id="tab-chat">💬 Chat</div>
+  <div class="tab" onclick="switchTab('kalender')" id="tab-kalender">📅 Kalender</div>
+  <div class="tab" onclick="switchTab('profil')" id="tab-profil">👤 Profil</div>
+</div>
 
-        <div class="fixed bottom-4 left-0 right-0 max-w-xl mx-auto px-4 flex gap-2">
-            <input type="file" id="img-input" class="hidden" accept="image/*">
-            <button onclick="document.getElementById('img-input').click()" class="bg-slate-800 text-white px-4 rounded-xl">📷</button>
-            <input id="user-input" class="flex-1 p-4 rounded-xl border shadow" placeholder="Ketik atau scan makanan...">
-            <button onclick="handleSend()" class="bg-emerald-600 text-white px-6 rounded-xl font-bold">Kirim</button>
+<!-- ===== CHAT PAGE ===== -->
+<div class="page active" id="page-chat">
+  <div class="today-summary">
+    <h3>Asupan Hari Ini</h3>
+    <div class="nutrients-grid">
+      <div class="nutrient-chip cal">
+        <span class="nutrient-val" id="s-cal">0</span>
+        <span class="nutrient-lbl">Kalori</span>
+      </div>
+      <div class="nutrient-chip">
+        <span class="nutrient-val" id="s-prot">0g</span>
+        <span class="nutrient-lbl">Protein</span>
+      </div>
+      <div class="nutrient-chip">
+        <span class="nutrient-val" id="s-carb">0g</span>
+        <span class="nutrient-lbl">Karbo</span>
+      </div>
+      <div class="nutrient-chip">
+        <span class="nutrient-val" id="s-fat">0g</span>
+        <span class="nutrient-lbl">Lemak</span>
+      </div>
+      <div class="nutrient-chip">
+        <span class="nutrient-val" id="s-fiber">0g</span>
+        <span class="nutrient-lbl">Serat</span>
+      </div>
+      <div class="nutrient-chip">
+        <span class="nutrient-val" id="s-sugar">0g</span>
+        <span class="nutrient-lbl">Gula</span>
+      </div>
+      <div class="nutrient-chip">
+        <span class="nutrient-val" id="s-sodium">0mg</span>
+        <span class="nutrient-lbl">Sodium</span>
+      </div>
+      <div class="nutrient-chip">
+        <span class="nutrient-val" id="s-chol">0mg</span>
+        <span class="nutrient-lbl">Kolest.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-area" id="chat-area">
+    <!-- messages will be inserted here -->
+  </div>
+
+  <div class="input-area">
+    <div class="input-row">
+      <div class="input-tools">
+        <button class="tool-btn" onclick="document.getElementById('img-input').click()" title="Upload foto">📷</button>
+      </div>
+      <textarea class="msg-input" id="user-input" placeholder="Ceritakan yang kamu makan..." rows="1"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();handleSend()}"
+        oninput="autoResize(this)"></textarea>
+      <button class="send-btn" onclick="handleSend()">➤</button>
+    </div>
+  </div>
+  <input type="file" id="img-input" accept="image/*" style="display:none" onchange="handleImage(this)">
+</div>
+
+<!-- ===== KALENDER PAGE ===== -->
+<div class="page" id="page-kalender">
+  <div class="calendar-wrap">
+    <div class="cal-header">
+      <h2 id="cal-month-label">Mei 2026</h2>
+      <div class="cal-nav">
+        <button onclick="changeMonth(-1)">‹</button>
+        <button onclick="changeMonth(1)">›</button>
+      </div>
+    </div>
+    <div class="cal-grid-header">
+      <div class="cal-day-name">Min</div>
+      <div class="cal-day-name">Sen</div>
+      <div class="cal-day-name">Sel</div>
+      <div class="cal-day-name">Rab</div>
+      <div class="cal-day-name">Kam</div>
+      <div class="cal-day-name">Jum</div>
+      <div class="cal-day-name">Sab</div>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+
+    <div class="day-detail" id="day-detail" style="display:none">
+      <h3 id="detail-date">Senin, 19 Mei 2026</h3>
+      <div class="detail-nutrients" id="detail-nutrients"></div>
+      <div class="meal-log-list" id="detail-meals"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PROFIL PAGE ===== -->
+<div class="page" id="page-profil">
+  <div class="profile-wrap">
+
+    <div class="profile-section">
+      <div class="section-title"><span>🔑</span> API Key Google AI Studio</div>
+      <div class="form-row">
+        <label class="form-label">Gemini API Key</label>
+        <div class="api-key-wrap">
+          <input type="password" class="form-input api-key-input" id="p-apikey" placeholder="AIza...">
+          <button class="show-key-btn" onclick="toggleKey()">👁️</button>
         </div>
+        <div style="margin-top:8px">
+          <span id="key-status" class="status-badge err">❌ Belum diset</span>
+        </div>
+      </div>
+      <p style="font-size:11px;color:var(--text-muted);margin-top:6px">Dapatkan di <strong>aistudio.google.com</strong> → Get API Key. Key hanya disimpan lokal di browser kamu.</p>
     </div>
 
-    <div id="modal-profil" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 overflow-y-auto">
-        <div class="bg-white p-6 rounded-3xl w-full max-w-sm space-y-3">
-            <h3 class="font-bold">Profil Kesehatan</h3>
-            <input type="number" id="p-age" placeholder="Usia" class="w-full p-2 bg-slate-100 rounded-lg">
-            <input type="number" id="p-weight" placeholder="Berat (kg)" class="w-full p-2 bg-slate-100 rounded-lg">
-            <select id="p-fase" class="w-full p-2 bg-slate-100 rounded-lg">
-                <option value="Folikular">Fase Folikular</option>
-                <option value="Ovulasi">Fase Ovulasi</option>
-                <option value="Luteal">Fase Luteal</option>
-                <option value="Menstruasi">Sedang Menstruasi</option>
-            </select>
-            <div class="grid grid-cols-2 gap-2 text-xs" id="checklist-medis">
-                <label><input type="checkbox" value="GERD"> GERD</label>
-                <label><input type="checkbox" value="Maag"> Maag</label>
-                <label><input type="checkbox" value="Kolesterol"> Kolesterol</label>
-                <label><input type="checkbox" value="Diabetes"> Diabetes</label>
-                <label><input type="checkbox" value="PCOS"> PCOS</label>
-            </div>
-            <button onclick="saveProfile()" class="w-full bg-emerald-600 text-white p-3 rounded-xl font-bold">Simpan</button>
+    <div class="profile-section">
+      <div class="section-title"><span>👤</span> Data Diri</div>
+      <div class="form-row">
+        <label class="form-label">Nama</label>
+        <input class="form-input" id="p-name" placeholder="Nama kamu">
+      </div>
+      <div class="form-row-2">
+        <div class="form-row" style="margin:0">
+          <label class="form-label">Jenis Kelamin</label>
+          <select class="form-input form-select" id="p-gender">
+            <option value="perempuan">Perempuan</option>
+            <option value="laki-laki">Laki-laki</option>
+          </select>
         </div>
+        <div class="form-row" style="margin:0">
+          <label class="form-label">Usia</label>
+          <input class="form-input" type="number" id="p-age" placeholder="25" min="10" max="99">
+        </div>
+      </div>
+      <div class="form-row-2">
+        <div class="form-row" style="margin:0">
+          <label class="form-label">Tinggi (cm)</label>
+          <input class="form-input" type="number" id="p-height" placeholder="160">
+        </div>
+        <div class="form-row" style="margin:0">
+          <label class="form-label">Berat (kg)</label>
+          <input class="form-input" type="number" id="p-weight" placeholder="58">
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Target</label>
+        <select class="form-input form-select" id="p-goal">
+          <option value="turun">Turun Berat Badan</option>
+          <option value="jaga">Jaga Berat Badan</option>
+          <option value="naik">Naik Berat Badan (otot)</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Aktivitas Harian</label>
+        <select class="form-input form-select" id="p-activity">
+          <option value="sedentary">Sangat sedikit gerak (kerja kantoran)</option>
+          <option value="light">Gerak ringan (jalan kaki sesekali)</option>
+          <option value="moderate">Aktif sedang (olahraga 3-4x/minggu)</option>
+          <option value="active">Aktif (olahraga hampir tiap hari)</option>
+          <option value="very_active">Sangat aktif (atlet/kerja fisik berat)</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Target Berat (kg)</label>
+        <input class="form-input" type="number" id="p-target-weight" placeholder="53">
+      </div>
     </div>
 
-    <div id="modal-riwayat" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4">
-        <div class="bg-white p-6 rounded-3xl w-full max-w-sm h-80 overflow-y-auto">
-            <h3 class="font-bold mb-4">Riwayat Kalori</h3>
-            <div id="list-riwayat" class="text-sm"></div>
-            <button onclick="document.getElementById('modal-riwayat').classList.add('hidden')" class="w-full mt-4 bg-slate-200 p-3 rounded-xl">Tutup</button>
+    <div class="profile-section" id="section-menstruasi">
+      <div class="section-title"><span>🌸</span> Siklus Menstruasi</div>
+      <div class="form-row">
+        <label class="form-label">Fase Saat Ini</label>
+        <select class="form-input form-select" id="p-fase">
+          <option value="">Tidak tahu / tidak relevan</option>
+          <option value="Menstruasi">Sedang Menstruasi (hari 1-5)</option>
+          <option value="Folikular">Folikular – energi mulai naik (hari 6-13)</option>
+          <option value="Ovulasi">Ovulasi – puncak energi (hari 14-16)</option>
+          <option value="Luteal">Luteal / Pre-PMS (hari 17-28)</option>
+          <option value="PMS">PMS – mau haid</option>
+        </select>
+      </div>
+      <div class="form-row-2">
+        <div class="form-row" style="margin:0">
+          <label class="form-label">Panjang siklus</label>
+          <input class="form-input" type="number" id="p-cycle" placeholder="28" min="21" max="35">
         </div>
+        <div class="form-row" style="margin:0">
+          <label class="form-label">Hari terakhir haid</label>
+          <input class="form-input" type="date" id="p-last-period">
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Gejala yang sering dirasakan</label>
+        <div class="checklist-grid" id="pms-symptoms">
+          <div class="check-item" onclick="toggleCheck(this)">
+            <div class="check-icon">✓</div>
+            <span class="check-label">Kram perut</span>
+            <input type="checkbox" value="Kram perut">
+          </div>
+          <div class="check-item" onclick="toggleCheck(this)">
+            <div class="check-icon">✓</div>
+            <span class="check-label">Bloating</span>
+            <input type="checkbox" value="Bloating">
+          </div>
+          <div class="check-item" onclick="toggleCheck(this)">
+            <div class="check-icon">✓</div>
+            <span class="check-label">Mood swing</span>
+            <input type="checkbox" value="Mood swing">
+          </div>
+          <div class="check-item" onclick="toggleCheck(this)">
+            <div class="check-icon">✓</div>
+            <span class="check-label">Craving manis</span>
+            <input type="checkbox" value="Craving manis">
+          </div>
+          <div class="check-item" onclick="toggleCheck(this)">
+            <div class="check-icon">✓</div>
+            <span class="check-label">Craving asin</span>
+            <input type="checkbox" value="Craving asin">
+          </div>
+          <div class="check-item" onclick="toggleCheck(this)">
+            <div class="check-icon">✓</div>
+            <span class="check-label">Kelelahan</span>
+            <input type="checkbox" value="Kelelahan">
+          </div>
+          <div class="check-item" onclick="toggleCheck(this)">
+            <div class="check-icon">✓</div>
+            <span class="check-label">Sakit kepala</span>
+            <input type="checkbox" value="Sakit kepala">
+          </div>
+          <div class="check-item" onclick="toggleCheck(this)">
+            <div class="check-icon">✓</div>
+            <span class="check-label">Susah tidur</span>
+            <input type="checkbox" value="Susah tidur">
+          </div>
+        </div>
+      </div>
     </div>
 
-    <script>
-        // Logika Data
-        function saveProfile() {
-            const data = {
-                age: document.getElementById('p-age').value,
-                weight: document.getElementById('p-weight').value,
-                fase: document.getElementById('p-fase').value,
-                medis: Array.from(document.querySelectorAll('#checklist-medis input:checked')).map(i => i.value)
-            };
-            localStorage.setItem('user_profile', JSON.stringify(data));
-            document.getElementById('modal-profil').classList.add('hidden');
-            alert("Profil diperbarui!");
-        }
+    <div class="profile-section">
+      <div class="section-title"><span>🏥</span> Kondisi Medis & Alergi</div>
+      <p style="font-size:11px;color:var(--text-muted);margin-bottom:12px">Centang semua yang relevan agar rekomendasi lebih tepat</p>
+      <div class="checklist-grid" id="medical-conditions">
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-icon">✓</div><span class="check-label">GERD / Asam Lambung</span><input type="checkbox" value="GERD"></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-icon">✓</div><span class="check-label">Maag / Gastritis</span><input type="checkbox" value="Maag"></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-icon">✓</div><span class="check-label">Kolesterol Tinggi</span><input type="checkbox" value="Kolesterol Tinggi"></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-icon">✓</div><span class="check-label">Hipertensi</span><input type="checkbox" value="Hipertensi"></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-icon">✓</div><span class="check-label">Diabetes Tipe 2</span><input type="checkbox" value="Diabetes Tipe 2"></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-icon">✓</div><span class="check-label">Pre-Diabetes</span><input type="checkbox" value="Pre-Diabetes"></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-icon">✓</div><span class="check-label">PCOS</span><input type="checkbox" value="PCOS"></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-icon">✓</div><span class="check-label">Asam Urat</span><input type="checkbox" value="Asam Urat"></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-icon">✓</div><span class="check-label">Anemia</span><input type="checkbox" value="Anemia"></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-icon">✓</div><span class="check-label">Hormonal Acne</span><input type="checkbox" value="Hormonal Acne"></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-icon">✓</div><span class="check-label">Insulin Resistance</span><input type="checkbox" value="Insulin Resistance"></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-icon">✓</div><span class="check-label">Trigliserida Tinggi</span><input type="checkbox" value="Trigliserida Tinggi"></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-icon">✓</div><span class="check-label">Fatty Liver</span><input type="checkbox" value="Fatty Liver"></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-icon">✓</div><span class="check-label">Thyroid</span><input type="checkbox" value="Thyroid"></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-icon">✓</div><span class="check-label">Alergi Gluten</span><input type="checkbox" value="Alergi Gluten"></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-icon">✓</div><span class="check-label">Alergi Susu</span><input type="checkbox" value="Alergi Susu"></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-icon">✓</div><span class="check-label">Alergi Seafood</span><input type="checkbox" value="Alergi Seafood"></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-icon">✓</div><span class="check-label">Alergi Kacang</span><input type="checkbox" value="Alergi Kacang"></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-icon">✓</div><span class="check-label">Vegetarian</span><input type="checkbox" value="Vegetarian"></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-icon">✓</div><span class="check-label">Vegan</span><input type="checkbox" value="Vegan"></div>
+      </div>
+    </div>
 
-        async function handleSend() {
-            const input = document.getElementById('user-input');
-            const key = localStorage.getItem('gemini_key') || prompt("Masukkan API Key Google AI Studio:");
-            if(key) localStorage.setItem('gemini_key', key);
-            
-            const profile = JSON.parse(localStorage.getItem('user_profile') || '{}');
-            
-            // Kirim ke AI dengan konteks lengkap
-            const promptAI = `Role: NutriCoach. Profil: ${JSON.stringify(profile)}. 
-            Input user: ${input.value}. 
-            Instruksi: Berikan saran berdasarkan kondisi medis dan fase siklus. Akhiri dengan pertanyaan suportif. 
-            Output format JSON murni: {"cal":0, "prot":0}`;
+    <div class="profile-section">
+      <div class="section-title"><span>🥢</span> Preferensi Makan</div>
+      <div class="form-row">
+        <label class="form-label">Pola Makan</label>
+        <select class="form-input form-select" id="p-diet-pattern">
+          <option value="normal">Normal (makan 3x sehari)</option>
+          <option value="intermittent">Intermittent Fasting</option>
+          <option value="small_frequent">Makan kecil sering (5-6x)</option>
+          <option value="low_carb">Low Carb</option>
+          <option value="high_protein">High Protein</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Makanan yang Tidak Disukai</label>
+        <input class="form-input" id="p-dislike" placeholder="cth: pete, jengkol, durian">
+      </div>
+    </div>
 
-            // (Lanjutkan dengan fetch ke API Gemini...)
-            // ... (logika update UI dan simpan riwayat sama seperti sebelumnya) ...
-            input.value = '';
-        }
-    </script>
+    <div style="padding: 0 0 20px">
+      <button class="save-btn" onclick="saveProfile()">💾 Simpan Profil</button>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ================== STATE ==================
+let todayNutrients = { cal:0, prot:0, carb:0, fat:0, fiber:0, sugar:0, sodium:0, chol:0 };
+let todayMeals = [];
+let pendingImage = null;
+let calYear, calMonth, calSelectedDate;
+const today = new Date();
+
+// ================== INIT ==================
+window.addEventListener('DOMContentLoaded', () => {
+  loadProfile();
+  loadToday();
+  initCalendar();
+  addAiMessage("Halo! 🌿 Saya NutriCoach AI-mu. Ceritakan apa yang kamu makan hari ini — bisa diketik atau kirim foto makanannya ya!");
+  checkApiKey();
+});
+
+// ================== TABS ==================
+function switchTab(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'kalender') renderCalendar();
+}
+
+// ================== PROFILE ==================
+function saveProfile() {
+  const profile = {
+    apikey: document.getElementById('p-apikey').value.trim(),
+    name: document.getElementById('p-name').value.trim(),
+    gender: document.getElementById('p-gender').value,
+    age: document.getElementById('p-age').value,
+    height: document.getElementById('p-height').value,
+    weight: document.getElementById('p-weight').value,
+    goal: document.getElementById('p-goal').value,
+    activity: document.getElementById('p-activity').value,
+    targetWeight: document.getElementById('p-target-weight').value,
+    fase: document.getElementById('p-fase').value,
+    cycle: document.getElementById('p-cycle').value,
+    lastPeriod: document.getElementById('p-last-period').value,
+    pmsSymptoms: getChecked('pms-symptoms'),
+    medicalConditions: getChecked('medical-conditions'),
+    dietPattern: document.getElementById('p-diet-pattern').value,
+    dislike: document.getElementById('p-dislike').value,
+  };
+  localStorage.setItem('nc_profile', JSON.stringify(profile));
+  showToast('✅ Profil tersimpan!');
+  checkApiKey();
+  // Hide menstruasi section if male
+  document.getElementById('section-menstruasi').style.display = profile.gender === 'laki-laki' ? 'none' : '';
+}
+
+function loadProfile() {
+  const raw = localStorage.getItem('nc_profile');
+  if (!raw) return;
+  const p = JSON.parse(raw);
+  const fields = ['apikey','name','age','height','weight','targetWeight','cycle','lastPeriod','dislike'];
+  fields.forEach(f => { const el = document.getElementById('p-' + f.replace(/([A-Z])/g, m => '-' + m.toLowerCase())); if (el && p[f]) el.value = p[f]; });
+  // selects
+  ['gender','goal','activity','fase','diet-pattern'].forEach(f => {
+    const key = f.replace('-', '');
+    const el = document.getElementById('p-' + f);
+    if (el && p[key.replace('-','')] !== undefined) el.value = p[key] || p[f.replace('-','')] || '';
+  });
+  // manual selects
+  if (p.gender) document.getElementById('p-gender').value = p.gender;
+  if (p.goal) document.getElementById('p-goal').value = p.goal;
+  if (p.activity) document.getElementById('p-activity').value = p.activity;
+  if (p.fase) document.getElementById('p-fase').value = p.fase;
+  if (p.dietPattern) document.getElementById('p-diet-pattern').value = p.dietPattern;
+  if (p.apikey) document.getElementById('p-apikey').value = p.apikey;
+
+  // checkboxes
+  if (p.pmsSymptoms) setChecked('pms-symptoms', p.pmsSymptoms);
+  if (p.medicalConditions) setChecked('medical-conditions', p.medicalConditions);
+  if (p.gender === 'laki-laki') document.getElementById('section-menstruasi').style.display = 'none';
+  checkApiKey();
+}
+
+function getChecked(containerId) {
+  return Array.from(document.querySelectorAll('#' + containerId + ' input:checked')).map(i => i.value);
+}
+function setChecked(containerId, values) {
+  document.querySelectorAll('#' + containerId + ' .check-item').forEach(item => {
+    const val = item.querySelector('input').value;
+    if (values.includes(val)) {
+      item.classList.add('active');
+      item.querySelector('input').checked = true;
+    }
+  });
+}
+
+function toggleCheck(item) {
+  const cb = item.querySelector('input');
+  cb.checked = !cb.checked;
+  item.classList.toggle('active', cb.checked);
+}
+
+function toggleKey() {
+  const inp = document.getElementById('p-apikey');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+function checkApiKey() {
+  const p = JSON.parse(localStorage.getItem('nc_profile') || '{}');
+  const badge = document.getElementById('key-status');
+  if (p.apikey && p.apikey.length > 10) {
+    badge.className = 'status-badge ok';
+    badge.textContent = '✅ API Key tersimpan';
+  } else {
+    badge.className = 'status-badge err';
+    badge.textContent = '❌ Belum diset';
+  }
+}
+
+function getProfile() {
+  return JSON.parse(localStorage.getItem('nc_profile') || '{}');
+}
+
+// ================== TODAY DATA ==================
+function todayKey() {
+  const d = new Date();
+  return `nc_day_${d.getFullYear()}_${d.getMonth()}_${d.getDate()}`;
+}
+
+function loadToday() {
+  const raw = localStorage.getItem(todayKey());
+  if (raw) {
+    const data = JSON.parse(raw);
+    todayNutrients = data.nutrients || todayNutrients;
+    todayMeals = data.meals || [];
+    updateSummary();
+  }
+}
+
+function saveToday() {
+  localStorage.setItem(todayKey(), JSON.stringify({ nutrients: todayNutrients, meals: todayMeals }));
+}
+
+function updateSummary() {
+  document.getElementById('s-cal').textContent = Math.round(todayNutrients.cal);
+  document.getElementById('s-prot').textContent = Math.round(todayNutrients.prot) + 'g';
+  document.getElementById('s-carb').textContent = Math.round(todayNutrients.carb) + 'g';
+  document.getElementById('s-fat').textContent = Math.round(todayNutrients.fat) + 'g';
+  document.getElementById('s-fiber').textContent = Math.round(todayNutrients.fiber) + 'g';
+  document.getElementById('s-sugar').textContent = Math.round(todayNutrients.sugar) + 'g';
+  document.getElementById('s-sodium').textContent = Math.round(todayNutrients.sodium) + 'mg';
+  document.getElementById('s-chol').textContent = Math.round(todayNutrients.chol) + 'mg';
+}
+
+// ================== CHAT ==================
+function addAiMessage(html) {
+  const area = document.getElementById('chat-area');
+  const div = document.createElement('div');
+  div.className = 'msg ai';
+  div.innerHTML = `<div class="msg-bubble">${html}</div><div class="msg-time">${timeNow()}</div>`;
+  area.appendChild(div);
+  scrollChat();
+}
+
+function addUserMessage(text, imgSrc) {
+  const area = document.getElementById('chat-area');
+  const div = document.createElement('div');
+  div.className = 'msg user';
+  let content = '';
+  if (imgSrc) content += `<img src="${imgSrc}" class="msg-img">`;
+  if (text) content += `<div class="msg-bubble">${escHtml(text)}</div>`;
+  content += `<div class="msg-time">${timeNow()}</div>`;
+  div.innerHTML = content;
+  area.appendChild(div);
+  scrollChat();
+}
+
+function showThinking() {
+  const area = document.getElementById('chat-area');
+  const div = document.createElement('div');
+  div.className = 'msg ai';
+  div.id = 'thinking-bubble';
+  div.innerHTML = `<div class="ai-thinking"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+  area.appendChild(div);
+  scrollChat();
+}
+
+function removeThinking() {
+  const el = document.getElementById('thinking-bubble');
+  if (el) el.remove();
+}
+
+function scrollChat() {
+  const area = document.getElementById('chat-area');
+  setTimeout(() => area.scrollTop = area.scrollHeight, 80);
+}
+
+function timeNow() {
+  return new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+// ================== SEND ==================
+async function handleSend() {
+  const inputEl = document.getElementById('user-input');
+  const text = inputEl.value.trim();
+  if (!text && !pendingImage) return;
+
+  const p = getProfile();
+  if (!p.apikey) {
+    addAiMessage('⚠️ Kamu belum set API Key. Yuk isi dulu di tab <strong>Profil</strong> → bagian API Key Google AI Studio!');
+    return;
+  }
+
+  addUserMessage(text, pendingImage);
+  inputEl.value = '';
+  inputEl.style.height = 'auto';
+  showThinking();
+
+  const imgData = pendingImage;
+  pendingImage = null;
+
+  try {
+    const response = await callGemini(text, imgData, p);
+    removeThinking();
+
+    let parsed = null;
+    try {
+      // Try to extract JSON from response
+      const jsonMatch = response.match(/```json\s*([\s\S]*?)```/i) || response.match(/\{[\s\S]*"nutrients"[\s\S]*\}/);
+      if (jsonMatch) {
+        parsed = JSON.parse(jsonMatch[1] || jsonMatch[0]);
+      }
+    } catch(e) {}
+
+    if (parsed && parsed.nutrients) {
+      const n = parsed.nutrients;
+      todayNutrients.cal += n.cal || 0;
+      todayNutrients.prot += n.protein || n.prot || 0;
+      todayNutrients.carb += n.carb || n.carbs || 0;
+      todayNutrients.fat += n.fat || 0;
+      todayNutrients.fiber += n.fiber || 0;
+      todayNutrients.sugar += n.sugar || 0;
+      todayNutrients.sodium += n.sodium || 0;
+      todayNutrients.chol += n.cholesterol || n.chol || 0;
+      todayMeals.push({ name: parsed.food_name || text, cal: n.cal || 0, time: timeNow() });
+      updateSummary();
+      saveToday();
+    }
+
+    const htmlMsg = formatAIResponse(parsed ? parsed.message || response : response);
+    addAiMessage(htmlMsg);
+
+  } catch(err) {
+    removeThinking();
+    addAiMessage(`⚠️ Gagal menghubungi AI: <strong>${err.message}</strong>. Coba cek API Key dan koneksi internet kamu.`);
+  }
+}
+
+// ================== IMAGE ==================
+function handleImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    pendingImage = e.target.result;
+    document.getElementById('user-input').placeholder = '📷 Foto siap dikirim. Tambah keterangan (opsional)...';
+    document.getElementById('user-input').focus();
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+// ================== GEMINI API ==================
+async function callGemini(userText, imgData, profile) {
+  const systemPrompt = buildSystemPrompt(profile);
+  const parts = [];
+
+  if (imgData) {
+    const base64 = imgData.split(',')[1];
+    const mimeType = imgData.match(/data:(.*?);/)[1];
+    parts.push({ inline_data: { mime_type: mimeType, data: base64 } });
+  }
+
+  const todaySummary = `Total nutrisi hari ini sejauh ini: Kalori ${Math.round(todayNutrients.cal)} kcal, Protein ${Math.round(todayNutrients.prot)}g, Karbo ${Math.round(todayNutrients.carb)}g, Lemak ${Math.round(todayNutrients.fat)}g, Serat ${Math.round(todayNutrients.fiber)}g, Sodium ${Math.round(todayNutrients.sodium)}mg.`;
+  
+  parts.push({ text: `${systemPrompt}\n\n${todaySummary}\n\nPesan pengguna: ${userText || '(foto makanan dikirim, tolong identifikasi dan analisis)'}` });
+
+  const body = {
+    contents: [{ role: 'user', parts }],
+    generationConfig: { temperature: 0.7, maxOutputTokens: 1200 }
+  };
+
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${profile.apikey}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `HTTP ${res.status}`);
+  }
+
+  const data = await res.json();
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || 'Tidak ada respon dari AI.';
+}
+
+function buildSystemPrompt(p) {
+  const name = p.name ? `Nama pengguna: ${p.name}.` : '';
+  const bio = `Jenis kelamin: ${p.gender || 'tidak diketahui'}. Usia: ${p.age || '?'} tahun. Tinggi: ${p.height || '?'} cm. Berat: ${p.weight || '?'} kg. Target berat: ${p.targetWeight || '?'} kg. Aktivitas: ${p.activity || 'sedang'}.`;
+  const goal = `Target: ${p.goal || 'jaga berat badan'}.`;
+  const medis = p.medicalConditions?.length ? `Kondisi medis: ${p.medicalConditions.join(', ')}.` : '';
+  const fase = p.fase ? `Fase siklus saat ini: ${p.fase}.` : '';
+  const pms = p.pmsSymptoms?.length ? `Gejala PMS/menstruasi: ${p.pmsSymptoms.join(', ')}.` : '';
+  const diet = `Pola makan: ${p.dietPattern || 'normal'}. Tidak suka: ${p.dislike || 'tidak ada'}.`;
+
+  return `Kamu adalah NutriCoach AI, nutrition coach pribadi yang suportif, hangat, dan tidak menghakimi.
+
+PROFIL PENGGUNA:
+${name} ${bio} ${goal} ${medis} ${fase} ${pms} ${diet}
+
+INSTRUKSI:
+1. Jika pengguna menyebutkan atau mengirim foto makanan:
+   - Identifikasi makanan dan estimasi porsi
+   - Hitung estimasi nutrisi
+   - Berikan analisis singkat berdasarkan kondisi medis pengguna
+   - Beri 1-2 rekomendasi praktis
+   - WAJIB: sertakan data nutrisi dalam format JSON di akhir respons dalam blok \`\`\`json
+
+Format JSON wajib saat ada makanan:
+\`\`\`json
+{
+  "food_name": "nama makanan",
+  "nutrients": {
+    "cal": 0,
+    "protein": 0,
+    "carb": 0,
+    "fat": 0,
+    "fiber": 0,
+    "sugar": 0,
+    "sodium": 0,
+    "cholesterol": 0
+  },
+  "message": "pesan utama AI (bisa kosong, karena sudah ada di teks sebelum JSON)"
+}
+\`\`\`
+
+2. Jika hanya pertanyaan/percakapan umum: jawab langsung tanpa JSON.
+3. Selalu gunakan bahasa Indonesia.
+4. Hindari kata "gagal diet", "buruk", "jangan makan ini".
+5. Gunakan "lebih baik dibatasi", "boleh sesekali", "opsi yang lebih aman".
+6. Perhatikan kondisi medis saat memberi saran.
+7. Untuk fase menstruasi, berikan saran yang relevan secara hormonal.
+8. Respons singkat dan mudah dibaca. Gunakan emoji secukupnya.`;
+}
+
+// ================== FORMAT AI RESPONSE ==================
+function formatAIResponse(raw) {
+  // Remove JSON block from display
+  let text = raw.replace(/```json[\s\S]*?```/gi, '').trim();
+  // Convert **bold**
+  text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  // Convert *italic*
+  text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+  // Convert line breaks
+  text = text.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
+  // Wrap in p
+  if (!text.startsWith('<')) text = '<p>' + text + '</p>';
+  return text;
+}
+
+// ================== CALENDAR ==================
+function initCalendar() {
+  calYear = today.getFullYear();
+  calMonth = today.getMonth();
+  calSelectedDate = todayKey();
+}
+
+function changeMonth(dir) {
+  calMonth += dir;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  document.getElementById('cal-month-label').textContent = `${months[calMonth]} ${calYear}`;
+
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = '';
+
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const daysInPrev = new Date(calYear, calMonth, 0).getDate();
+
+  // Prev month padding
+  for (let i = firstDay - 1; i >= 0; i--) {
+    const d = document.createElement('div');
+    d.className = 'cal-day other-month';
+    d.textContent = daysInPrev - i;
+    grid.appendChild(d);
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const d = document.createElement('div');
+    d.className = 'cal-day';
+    d.textContent = day;
+
+    const isToday = day === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear();
+    if (isToday) d.classList.add('today');
+
+    const key = `nc_day_${calYear}_${calMonth}_${day}`;
+    if (localStorage.getItem(key)) d.classList.add('has-data');
+
+    d.onclick = () => showDayDetail(calYear, calMonth, day);
+    grid.appendChild(d);
+  }
+
+  // Fill remaining
+  const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+  let nextDay = 1;
+  for (let i = firstDay + daysInMonth; i < totalCells; i++) {
+    const d = document.createElement('div');
+    d.className = 'cal-day other-month';
+    d.textContent = nextDay++;
+    grid.appendChild(d);
+  }
+}
+
+function showDayDetail(y, m, day) {
+  const key = `nc_day_${y}_${m}_${day}`;
+  const detail = document.getElementById('day-detail');
+  const raw = localStorage.getItem(key);
+
+  const dayNames = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  const dayName = dayNames[new Date(y, m, day).getDay()];
+  document.getElementById('detail-date').textContent = `${dayName}, ${day} ${months[m]} ${y}`;
+
+  if (!raw) {
+    detail.style.display = 'block';
+    document.getElementById('detail-nutrients').innerHTML = '';
+    document.getElementById('detail-meals').innerHTML = '<div class="no-data">Belum ada data untuk hari ini 🌱</div>';
+    return;
+  }
+
+  const data = JSON.parse(raw);
+  const n = data.nutrients || {};
+  const meals = data.meals || [];
+
+  const nutrientDefs = [
+    { key:'cal', label:'Kalori', unit:'kcal' },
+    { key:'prot', label:'Protein', unit:'g' },
+    { key:'carb', label:'Karbo', unit:'g' },
+    { key:'fat', label:'Lemak', unit:'g' },
+    { key:'fiber', label:'Serat', unit:'g' },
+    { key:'sugar', label:'Gula', unit:'g' },
+    { key:'sodium', label:'Sodium', unit:'mg' },
+    { key:'chol', label:'Kolesterol', unit:'mg' },
+  ];
+
+  document.getElementById('detail-nutrients').innerHTML = nutrientDefs.map(nd =>
+    `<div class="detail-chip">
+      <div class="detail-chip-label">${nd.label}</div>
+      <div><span class="detail-chip-val">${Math.round(n[nd.key]||0)}</span> <span class="detail-chip-unit">${nd.unit}</span></div>
+    </div>`
+  ).join('');
+
+  document.getElementById('detail-meals').innerHTML = meals.length
+    ? meals.map(m => `<div class="meal-log-item"><span class="meal-log-name">${escHtml(m.name)}</span><span class="meal-log-cal">${Math.round(m.cal)} kcal • ${m.time}</span></div>`).join('')
+    : '<div class="no-data">Tidak ada catatan makanan</div>';
+
+  detail.style.display = 'block';
+
+  // Highlight selected
+  document.querySelectorAll('.cal-day').forEach(el => el.classList.remove('selected'));
+  event.target.classList.add('selected');
+}
+
+// ================== UTILS ==================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
 </body>
 </html>
