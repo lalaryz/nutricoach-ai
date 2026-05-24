@@ -463,9 +463,13 @@
       </div>
     </div>
 
-    <div style="padding: 0 0 20px">
+    <div style="padding: 0 0 20px; display:flex; flex-direction:column; gap:10px">
       <button class="save-btn" onclick="saveProfile()">💾 Simpan Profil</button>
+      <button class="save-btn" style="background:var(--surface2);color:var(--text-muted);font-size:12px" onclick="resetStorage()">🗑️ Reset Data Tersimpan (jika model tidak berubah)</button>
     </div>
+
+
+
 
   </div>
 </div>
@@ -962,6 +966,16 @@ function showDayDetail(y, m, day) {
 }
 
 // ================== UTILS ==================
+function resetStorage() {
+  if (!confirm("Reset semua profil tersimpan? API Key dan data hari ini akan hilang.")) return;
+  localStorage.removeItem("nc_profile");
+  localStorage.removeItem(todayKey());
+  todayNutrients = { cal:0, prot:0, carb:0, fat:0, fiber:0, sugar:0, sodium:0, chol:0 };
+  todayMeals = [];
+  updateSummary();
+  showToast("✅ Reset berhasil! Isi ulang profil dan API Key.");
+}
+
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
