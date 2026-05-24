@@ -286,10 +286,10 @@
       <div class="form-row" style="margin-top:10px">
         <label class="form-label">Model Gemini</label>
         <select class="form-input form-select" id="p-model">
-          <option value="gemini-1.5-flash">gemini-1.5-flash (Free tier, rekomendasi)</option>
-          <option value="gemini-1.5-pro">gemini-1.5-pro (Lebih pintar, kuota lebih kecil)</option>
-          <option value="gemini-2.0-flash">gemini-2.0-flash (Terbaru, perlu billing)</option>
-          <option value="gemini-2.5-flash-preview-05-20">gemini-2.5-flash-preview (Terbaru 2025)</option>
+          <option value="gemini-2.0-flash-lite">gemini-2.0-flash-lite (Free tier, rekomendasi)</option>
+          <option value="gemini-2.0-flash">gemini-2.0-flash (Lebih pintar, butuh billing)</option>
+          <option value="gemini-2.5-flash">gemini-2.5-flash (Terbaru & paling pintar)</option>
+          <option value="gemini-2.5-pro">gemini-2.5-pro (Terbaru, paling canggih)</option>
         </select>
       </div>
       <p style="font-size:11px;color:var(--text-muted);margin-top:6px">Dapatkan API Key di <strong>aistudio.google.com</strong> 2192 Get API Key. Jika kuota habis, coba ganti model. Key hanya disimpan lokal di browser kamu.</p>
@@ -517,7 +517,7 @@ function saveProfile() {
     medicalConditions: getChecked('medical-conditions'),
     dietPattern: document.getElementById('p-diet-pattern').value,
     dislike: document.getElementById('p-dislike').value,
-    model: document.getElementById('p-model') ? document.getElementById('p-model').value : 'gemini-1.5-flash',
+    model: document.getElementById('p-model') ? document.getElementById('p-model').value : 'gemini-2.0-flash-lite',
   };
   localStorage.setItem('nc_profile', JSON.stringify(profile));
   showToast('✅ Profil tersimpan!');
@@ -772,7 +772,7 @@ async function callGemini(userText, imgData, profile) {
     generationConfig: { temperature: 0.7, maxOutputTokens: 1200 }
   };
 
-  const model = profile.model || "gemini-1.5-flash";
+  const model = profile.model || "gemini-2.0-flash-lite";
   const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${profile.apikey}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
