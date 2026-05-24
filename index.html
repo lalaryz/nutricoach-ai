@@ -6,1167 +6,907 @@
     <title>NutriCoach AI - Smart Diet Companion</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts (Plus Jakarta Sans) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f7f9f6;
         }
-        .custom-scrollbar::-webkit-scrollbar {
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
             width: 6px;
         }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
+        ::-webkit-scrollbar-thumb {
             background: #cbd5e1;
-            border-radius: 10px;
+            border-radius: 3px;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        ::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
     </style>
 </head>
-<body class="bg-[#FAF9F6] text-stone-800 min-h-screen flex flex-col">
+<body class="min-h-screen text-slate-800 flex flex-col">
 
-    <!-- Header / Navbar -->
-    <header class="bg-white/80 backdrop-blur-md border-b border-stone-200 sticky top-0 z-50 px-4 py-3 sm:px-8 flex justify-between items-center">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-200">
-                <i data-lucide="leaf" class="w-6 h-6"></i>
+    <!-- TOP HEADER -->
+    <header class="bg-white border-b border-emerald-100/80 sticky top-0 z-40 backdrop-blur-md bg-white/90">
+        <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 bg-emerald-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-emerald-200">
+                    <i class="fa-solid fa-leaf text-base"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-slate-900 leading-tight">NutriCoach AI</h1>
+                    <span class="text-xs text-emerald-600 font-medium">Smart Diet Companion</span>
+                </div>
             </div>
-            <div>
-                <h1 class="font-bold text-lg leading-none text-stone-900">NutriCoach <span class="text-emerald-600">AI</span></h1>
-                <p class="text-[10px] text-stone-500 font-medium">Smart Diet & Wellness Companion</p>
+            
+            <div class="flex items-center gap-2">
+                <!-- Tombol Kalender Riwayat -->
+                <button onclick="openHistoryModal()" class="w-9 h-9 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl flex items-center justify-center transition-all duration-200" title="Buka Riwayat Gizi">
+                    <i class="fa-solid fa-chart-simple text-sm"></i>
+                </button>
+                <!-- Tombol Setup API Key -->
+                <button onclick="openApiKeyModal()" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all duration-200 shadow-sm">
+                    <i class="fa-solid fa-key"></i>
+                    <span>API Key</span>
+                </button>
             </div>
-        </div>
-
-        <!-- API Key Status Indicator -->
-        <div class="flex items-center gap-2">
-            <button onclick="openModal('apiModal')" id="apiBadge" class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 transition-all hover:bg-amber-100">
-                <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-                Setup API Key
-            </button>
-            <button onclick="openModal('profileModal')" class="w-9 h-9 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm border border-emerald-200 hover:bg-emerald-200 transition-all">
-                <i data-lucide="user" class="w-5 h-5"></i>
-            </button>
         </div>
     </header>
 
-    <!-- Main Workspace Grid -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="flex-1 max-w-2xl w-full mx-auto px-4 py-6 flex flex-col gap-6 pb-24">
         
-        <!-- Left Side: Dashboard & Profile Summary (5 Cols) -->
-        <section class="lg:col-span-5 flex flex-col gap-6">
-            
-            <!-- Quick Stats Card -->
-            <div class="bg-white rounded-3xl p-6 shadow-sm border border-stone-100">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="font-bold text-stone-900 flex items-center gap-2">
-                        <i data-lucide="activity" class="text-emerald-600 w-5 h-5"></i>
-                        Status Gizi Hari Ini
-                    </h2>
-                    <div class="flex items-center gap-2">
-                        <!-- Button to open Historical Report -->
-                        <button onclick="openHistoryModal()" class="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg transition-all" title="Lihat Riwayat & Laporan">
-                            <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
-                        </button>
-                        <span class="text-xs text-stone-400 font-medium" id="currentDate">24 Mei 2026</span>
-                    </div>
+        <!-- WELCOME BANNER & HARI INI -->
+        <div class="bg-gradient-to-br from-emerald-800 to-teal-900 text-white p-5 rounded-3xl shadow-xl shadow-emerald-950/10 relative overflow-hidden">
+            <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-white/5 rounded-full blur-2xl"></div>
+            <div class="relative z-10">
+                <div class="flex justify-between items-center mb-1">
+                    <span id="display-date" class="text-xs text-emerald-200 font-medium tracking-wide uppercase">Hari Ini</span>
+                    <span class="bg-white/15 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase">Pro Active</span>
                 </div>
+                <h2 class="text-xl font-bold tracking-tight">Halo, Coach-mate! 👋</h2>
+                <p class="text-xs text-emerald-100/90 mt-1">Konsistensi jangka panjang jauh lebih berharga daripada pembatasan ekstrem.</p>
+            </div>
+        </div>
 
-                <div class="grid grid-cols-2 gap-4 mb-6">
-                    <div class="bg-emerald-50/50 rounded-2xl p-4 border border-emerald-100/50">
-                        <p class="text-xs text-stone-500 font-semibold mb-1">Target Kalori</p>
-                        <div class="flex items-baseline gap-1">
-                            <span class="text-2xl font-black text-emerald-700" id="caloriesValue">0</span>
-                            <span class="text-xs text-emerald-600 font-medium">/ 2,000 kcal</span>
-                        </div>
-                        <div class="w-full bg-stone-200/60 h-2 rounded-full mt-3 overflow-hidden">
-                            <div class="bg-emerald-600 h-full rounded-full transition-all duration-500" id="caloriesBar" style="width: 0%"></div>
-                        </div>
+        <!-- STATUS GIZI HARI INI -->
+        <section class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-1.5">
+                    <i class="fa-solid fa-heart text-rose-500"></i> Ringkasan Gizi Hari Ini
+                </h3>
+                <button onclick="resetTodayData()" class="text-xs text-slate-400 hover:text-rose-600 transition-colors flex items-center gap-1">
+                    <i class="fa-solid fa-rotate-right text-[10px]"></i> Reset
+                </button>
+            </div>
+
+            <!-- Kalori Progress Bar -->
+            <div class="mb-5">
+                <div class="flex justify-between items-end mb-1.5">
+                    <div>
+                        <span class="text-2xl font-extrabold text-slate-900" id="current-calories">0</span>
+                        <span class="text-xs text-slate-400 font-semibold">/ <span id="target-calories">2000</span> kkal</span>
                     </div>
-                    <div class="bg-amber-50/50 rounded-2xl p-4 border border-amber-100/50">
-                        <p class="text-xs text-stone-500 font-semibold mb-1">Cairan Tubuh</p>
-                        <div class="flex items-baseline gap-1">
-                            <span class="text-2xl font-black text-amber-700" id="waterValue">0</span>
-                            <span class="text-xs text-amber-600 font-medium">/ 2.5 L</span>
-                        </div>
-                        <div class="w-full bg-stone-200/60 h-2 rounded-full mt-3 overflow-hidden">
-                            <div class="bg-amber-500 h-full rounded-full transition-all duration-500" id="waterBar" style="width: 0%"></div>
-                        </div>
-                    </div>
+                    <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg" id="calories-percent">0%</span>
                 </div>
-
-                <!-- Macro Progress Bars -->
-                <div class="space-y-3">
-                    <div>
-                        <div class="flex justify-between text-xs font-semibold mb-1">
-                            <span class="text-stone-600">Protein (g)</span>
-                            <span class="text-stone-900" id="proteinText">0 / 120g</span>
-                        </div>
-                        <div class="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden">
-                            <div class="bg-blue-500 h-full rounded-full transition-all" id="proteinBar" style="width: 0%"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between text-xs font-semibold mb-1">
-                            <span class="text-stone-600">Karbohidrat (g)</span>
-                            <span class="text-stone-900" id="carbsText">0 / 250g</span>
-                        </div>
-                        <div class="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden">
-                            <div class="bg-amber-500 h-full rounded-full transition-all" id="carbsBar" style="width: 0%"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between text-xs font-semibold mb-1">
-                            <span class="text-stone-600">Lemak (g)</span>
-                            <span class="text-stone-900" id="fatText">0 / 65g</span>
-                        </div>
-                        <div class="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden">
-                            <div class="bg-rose-400 h-full rounded-full transition-all" id="fatBar" style="width: 0%"></div>
-                        </div>
-                    </div>
+                <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                    <div id="calories-progress-bar" class="h-full bg-emerald-500 rounded-full transition-all duration-500" style="width: 0%"></div>
                 </div>
             </div>
 
-            <!-- Cycle & Hormone Assist Widget -->
-            <div class="bg-white rounded-3xl p-6 shadow-sm border border-stone-100">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="font-bold text-stone-900 flex items-center gap-2">
-                        <i data-lucide="sparkles" class="text-rose-500 w-5 h-5"></i>
-                        Hormonal & Cycle Syncing
-                    </h2>
-                    <span class="text-xs bg-rose-50 text-rose-600 px-2 py-1 rounded-md font-bold" id="cycleStatusBadge">Menstruasi</span>
+            <!-- Makronutrisi Grid -->
+            <div class="grid grid-cols-3 gap-3">
+                <div class="bg-amber-50/50 border border-amber-100/50 p-3 rounded-2xl">
+                    <span class="text-[10px] font-bold text-amber-700 uppercase tracking-wider block mb-1">Karbohidrat</span>
+                    <p class="text-sm font-extrabold text-slate-900"><span id="current-carbs">0</span>g</p>
+                    <span class="text-[9px] text-slate-400 font-medium">Target: <span id="target-carbs">250</span>g</span>
                 </div>
-                <p class="text-xs text-stone-500 leading-relaxed mb-4">
-                    Sesuaikan porsi, ketahui penyebab lapar mendadak, serta cari alternatif nutrisi sehat berdasarkan fase siklus hormonal Anda.
-                </p>
-                <div class="grid grid-cols-4 gap-2 text-center">
-                    <button onclick="setCyclePhase('Menstruasi')" id="phaseBtn-Menstruasi" class="phase-btn p-2 rounded-xl text-[10px] font-bold border transition-all bg-rose-50 border-rose-200 text-rose-700">
-                        <div class="mb-1 text-base">🩸</div>Menstruasi
-                    </button>
-                    <button onclick="setCyclePhase('Folikuler')" id="phaseBtn-Folikuler" class="phase-btn p-2 rounded-xl text-[10px] font-bold border transition-all bg-stone-50 border-stone-200 text-stone-600">
-                        <div class="mb-1 text-base">🌱</div>Folikuler
-                    </button>
-                    <button onclick="setCyclePhase('Ovulasi')" id="phaseBtn-Ovulasi" class="phase-btn p-2 rounded-xl text-[10px] font-bold border transition-all bg-stone-50 border-stone-200 text-stone-600">
-                        <div class="mb-1 text-base">✨</div>Ovulasi
-                    </button>
-                    <button onclick="setCyclePhase('Luteal (PMS)')" id="phaseBtn-Luteal" class="phase-btn p-2 rounded-xl text-[10px] font-bold border transition-all bg-stone-50 border-stone-200 text-stone-600">
-                        <div class="mb-1 text-base">🍪</div>PMS
-                    </button>
+                <div class="bg-rose-50/50 border border-rose-100/50 p-3 rounded-2xl">
+                    <span class="text-[10px] font-bold text-rose-700 uppercase tracking-wider block mb-1">Protein</span>
+                    <p class="text-sm font-extrabold text-slate-900"><span id="current-protein">0</span>g</p>
+                    <span class="text-[9px] text-slate-400 font-medium">Target: <span id="target-protein">75</span>g</span>
                 </div>
-                <div class="mt-4 p-3 bg-rose-50/40 rounded-xl border border-rose-100/60 text-xs text-rose-800" id="cycleAdviseText">
-                    <strong>Fase Menstruasi:</strong> Tubuh rentan lelah dan butuh asupan zat besi tinggi. Perbanyak protein hangat dan sayuran hijau.
+                <div class="bg-blue-50/50 border border-blue-100/50 p-3 rounded-2xl">
+                    <span class="text-[10px] font-bold text-blue-700 uppercase tracking-wider block mb-1">Lemak</span>
+                    <p class="text-sm font-extrabold text-slate-900"><span id="current-fat">0</span>g</p>
+                    <span class="text-[9px] text-slate-400 font-medium">Target: <span id="target-fat">65</span>g</span>
                 </div>
             </div>
 
-            <!-- Profile Overview Quick Card -->
-            <div class="bg-stone-900 text-stone-100 rounded-3xl p-6 shadow-sm flex flex-col justify-between relative overflow-hidden">
-                <div class="absolute -right-8 -bottom-8 w-32 h-32 bg-emerald-600/20 rounded-full blur-2xl"></div>
-                <div>
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <span class="text-[10px] font-bold tracking-wider text-emerald-400 uppercase">Target Utama</span>
-                            <h3 class="text-lg font-bold text-white mt-1" id="profileGoalText">Menurunkan Berat Badan</h3>
-                        </div>
-                        <button onclick="openModal('profileModal')" class="p-1.5 hover:bg-white/10 rounded-lg transition-all text-stone-300">
-                            <i data-lucide="edit-3" class="w-4 h-4"></i>
+            <!-- Mikronutrisi & Tambahan -->
+            <div class="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-slate-100">
+                <div class="flex items-center justify-between text-xs px-1">
+                    <span class="text-slate-500"><i class="fa-solid fa-cubes text-amber-600 mr-1"></i> Gula:</span>
+                    <span class="font-bold text-slate-800"><span id="current-sugar">0</span>g</span>
+                </div>
+                <div class="flex items-center justify-between text-xs px-1">
+                    <span class="text-slate-500"><i class="fa-solid fa-shaker text-blue-500 mr-1"></i> Sodium:</span>
+                    <span class="font-bold text-slate-800"><span id="current-sodium">0</span> mg</span>
+                </div>
+                <div class="flex items-center justify-between text-xs px-1">
+                    <span class="text-slate-500"><i class="fa-solid fa-seedling text-emerald-600 mr-1"></i> Serat:</span>
+                    <span class="font-bold text-slate-800"><span id="current-fiber">0</span>g</span>
+                </div>
+                <div class="flex items-center justify-between text-xs px-1">
+                    <span class="text-slate-500"><i class="fa-solid fa-droplet text-cyan-500 mr-1"></i> Air:</span>
+                    <div class="flex items-center gap-1.5">
+                        <span class="font-bold text-slate-800"><span id="current-water">0</span> ml</span>
+                        <button onclick="addWater(250)" class="w-5 h-5 bg-cyan-50 text-cyan-600 rounded-md flex items-center justify-center hover:bg-cyan-100 transition-colors">
+                            <i class="fa-solid fa-plus text-[10px]"></i>
                         </button>
                     </div>
-                    <div class="grid grid-cols-2 gap-y-3 gap-x-2 text-xs text-stone-300">
-                        <div><strong class="text-white">Berat Saat Ini:</strong> <span id="pWeight">65</span> kg</div>
-                        <div><strong class="text-white">Target Berat:</strong> <span id="pTargetWeight">58</span> kg</div>
-                        <div class="col-span-2"><strong class="text-white">Kondisi Medis:</strong> <span id="pConditions" class="text-amber-300">Tidak ada</span></div>
-                    </div>
-                </div>
-                <div class="border-t border-stone-800 mt-4 pt-4 flex gap-4 text-xs text-stone-400">
-                    <span class="flex items-center gap-1"><i data-lucide="activity" class="w-3.5 h-3.5 text-emerald-400"></i> <span id="pActivity">Sedang</span></span>
-                    <span class="flex items-center gap-1"><i data-lucide="chef-hat" class="w-3.5 h-3.5 text-emerald-400"></i> <span id="pDiet">Semua Makanan</span></span>
                 </div>
             </div>
-
         </section>
 
-        <!-- Right Side: AI Nutritionist Chatbox (7 Cols) -->
-        <section class="lg:col-span-7 flex flex-col bg-white rounded-3xl border border-stone-100 shadow-sm h-[680px] overflow-hidden">
-            
+        <!-- KOTAK CHAT DAN LOG MAKANAN -->
+        <section class="flex-1 bg-white rounded-3xl border border-slate-100 shadow-sm flex flex-col overflow-hidden min-h-[450px]">
             <!-- Chat Header -->
-            <div class="p-4 border-b border-stone-100 flex items-center justify-between bg-stone-50/50">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-emerald-600/15 flex items-center justify-center text-emerald-700 font-bold">
-                        🥗
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-stone-900 text-sm">Coach Nutrisi AI</h3>
-                        <p class="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                            Online & Siap Membantu
-                        </p>
-                    </div>
+            <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <div class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></div>
+                    <span class="text-xs font-bold text-slate-700">Asisten NutriCoach Pribadi</span>
                 </div>
-                <div class="flex gap-2">
-                    <button onclick="clearChatHistory()" class="p-2 hover:bg-stone-100 rounded-lg text-stone-400 hover:text-stone-600 transition-all" title="Bersihkan Obrolan">
-                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                    </button>
-                </div>
+                <button onclick="clearChatHistory()" class="text-[10px] text-slate-400 hover:text-rose-600 font-semibold transition-colors">
+                    Hapus Chat
+                </button>
             </div>
 
-            <!-- Chat Message Area -->
-            <div id="chatContainer" class="flex-1 p-4 overflow-y-auto custom-scrollbar space-y-4">
+            <!-- Chat Messages Box -->
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-5 flex flex-col gap-4 max-h-[380px]">
                 <!-- Welcome Message -->
-                <div class="flex gap-3 max-w-[85%]">
-                    <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-sm flex-shrink-0">🥑</div>
-                    <div class="bg-stone-100 rounded-2xl p-4 text-stone-800 text-sm leading-relaxed rounded-tl-none">
-                        Halo! Aku adalah <strong>Nutrition Coach & Smart Diet Companion</strong> pribadimu. 💚 
-                        <br><br>
-                        Sekarang aku sudah dibekali dengan **Memori Mingguan**! Aku bisa mengingat apa saja yang kamu makan dan minum dalam beberapa hari terakhir secara otomatis untuk mengevaluasi konsistensi progres dietmu.
-                        <br><br>
-                        Kamu bisa mengetik makananmu hari ini, atau menanyakan evaluasi jangka panjang seperti: *“Gimana pola makanku seminggu terakhir ini, udah cukup sehat belum?”*
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-circle-nodes text-sm"></i>
+                    </div>
+                    <div class="bg-slate-50 rounded-2xl rounded-tl-none p-3.5 text-xs text-slate-700 max-w-[85%] leading-relaxed border border-slate-100/50">
+                        Halo! Aku asisten NutriCoach pribadimu. 😊 <br><br>
+                        Tuliskan menu makananmu secara santai (misal: <i>"Ayam geprek nasi putih es teh"</i>, <i>"Nasi uduk telur balado"</i>), atau diskusikan keluhan craving, siklus hormon, dan menu diet sehat tanpa siksaan di sini!
                     </div>
                 </div>
             </div>
 
-            <!-- Floating Quick Input Helpers -->
-            <div class="px-4 py-2 bg-stone-50 border-t border-stone-100 flex gap-2 overflow-x-auto scrollbar-none text-xs">
-                <span class="text-stone-400 font-bold flex-shrink-0 self-center">Pertanyaan Cepat:</span>
-                <button onclick="fillAndSend('Evaluasi pola makan dan konsumsi kalori saya selama seminggu terakhir ini secara mendetail.')" class="flex-shrink-0 px-2.5 py-1 bg-white border border-stone-200 rounded-lg text-stone-600 hover:border-emerald-500 hover:text-emerald-600 transition-all font-medium">
-                    📊 Analisis Mingguan Saya
-                </button>
-                <button onclick="fillAndSend('Nasi uduk + Telur dadar + Bakwan jagung')" class="flex-shrink-0 px-2.5 py-1 bg-white border border-stone-200 rounded-lg text-stone-600 hover:border-emerald-500 hover:text-emerald-600 transition-all font-medium">
-                    🍳 Sarapan Nasi Uduk
-                </button>
-                <button onclick="fillAndSend('Ayam Geprek sambal bawang level 5 + es teh manis')" class="flex-shrink-0 px-2.5 py-1 bg-white border border-stone-200 rounded-lg text-stone-600 hover:border-emerald-500 hover:text-emerald-600 transition-all font-medium">
-                    🔥 Ayam Geprek
-                </button>
-            </div>
-
-            <!-- Chat Input Controls -->
-            <div class="p-4 border-t border-stone-100 bg-white">
-                <form id="chatForm" onsubmit="handleSendMessage(event)" class="flex gap-2">
-                    <input type="text" id="userInput" placeholder="Tulis menu makanan Anda atau ajukan pertanyaan gizi..." class="flex-1 px-4 py-3 rounded-2xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" required>
-                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 rounded-2xl transition-all font-semibold flex items-center justify-center gap-1 shadow-sm">
-                        <span>Kirim</span>
-                        <i data-lucide="send" class="w-4 h-4"></i>
+            <!-- Input Box -->
+            <div class="p-4 border-t border-slate-100 bg-white">
+                <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-2xl px-3 py-2 focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500 transition-all duration-200">
+                    <textarea id="user-input" rows="1" placeholder="Ketik makanan atau konsultasikan kesehatan..." class="bg-transparent border-none outline-none flex-1 text-xs text-slate-800 placeholder-slate-400 resize-none h-6 focus:ring-0" onkeydown="handleKeyPress(event)"></textarea>
+                    
+                    <button onclick="sendMessage()" id="send-btn" class="w-8 h-8 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl flex items-center justify-center transition-colors shadow-md shadow-emerald-200">
+                        <i class="fa-solid fa-paper-plane text-xs"></i>
                     </button>
-                </form>
+                </div>
+                <div class="flex justify-between items-center mt-2 px-1">
+                    <span class="text-[9px] text-slate-400 font-medium">Didukung oleh Gemini 2.5 Pro Cloud</span>
+                    <button onclick="document.getElementById('file-input').click()" class="text-[10px] text-emerald-600 hover:text-emerald-700 font-bold flex items-center gap-1">
+                        <i class="fa-solid fa-image"></i> Upload Foto Makanan
+                    </button>
+                    <input type="file" id="file-input" class="hidden" accept="image/*" onchange="handleImageUpload(event)">
+                </div>
             </div>
-
         </section>
 
     </main>
 
-    <!-- Modal 1: Google AI Studio API Key Setup -->
-    <div id="apiModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl border border-stone-100 relative animate-fade-in">
-            <button onclick="closeModal('apiModal')" class="absolute top-4 right-4 p-1 hover:bg-stone-100 rounded-lg transition-all text-stone-400">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-            <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600">
-                    <i data-lucide="key" class="w-5 h-5"></i>
-                </div>
-                <div>
-                    <h3 class="font-bold text-stone-900 text-base">Setup Google AI Studio Key</h3>
-                    <p class="text-xs text-stone-500">Hubungkan dengan mesin kecerdasan AI Pro Anda</p>
-                </div>
+    <!-- FLOATING CHIP ALERT (NOTIFIKASI CUSTOM) -->
+    <div id="toast-notif" class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs px-4 py-2.5 rounded-full shadow-lg z-50 flex items-center gap-2 opacity-0 pointer-events-none transition-all duration-300">
+        <i class="fa-solid fa-circle-info text-emerald-400" id="toast-icon"></i>
+        <span id="toast-msg">Notifikasi muncul di sini!</span>
+    </div>
+
+    <!-- MODAL SETUP API KEY -->
+    <div id="api-key-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl scale-95 transition-all duration-300 transform" id="api-modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-key text-emerald-600"></i> Setup Google API Key
+                </h3>
+                <button onclick="closeApiKeyModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+                Aplikasi ini langsung terhubung dengan aman ke API Google. Ambil API Key Anda secara gratis di <a href="https://aistudio.google.com/" target="_blank" class="text-emerald-600 font-semibold underline">Google AI Studio</a>.
+            </p>
+            <div class="flex flex-col gap-3">
+                <input type="password" id="api-key-input" placeholder="Masukkan AIzaSy... API Key Anda" class="w-full text-xs px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:border-emerald-500 focus:outline-none">
+                <button onclick="saveApiKey()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-colors">
+                    Simpan API Key
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL RIWAYAT BULANAN -->
+    <div id="history-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl scale-95 transition-all duration-300 transform max-h-[90vh] flex flex-col" id="history-modal-content">
+            <div class="flex justify-between items-center mb-4 shrink-0">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-chart-line text-emerald-600"></i> Dashboard Riwayat Gizi
+                </h3>
+                <button onclick="closeHistoryModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
             </div>
             
-            <p class="text-xs text-stone-600 leading-relaxed mb-4">
-                Untuk menggunakan AI ini secara penuh dengan <strong>system prompt khusus diet sehat Anda</strong>, Anda perlu mendapatkan API Key gratis dari Google AI Studio.
-            </p>
-
-            <div class="bg-amber-50/50 rounded-2xl p-4 border border-amber-100/50 mb-4 text-xs space-y-2 text-amber-900">
-                <div class="font-bold flex items-center gap-1"><i data-lucide="help-circle" class="w-3.5 h-3.5"></i> Cara mendapatkan API Key:</div>
-                <ol class="list-decimal pl-4 space-y-1 text-stone-600">
-                    <li>Buka <a href="https://aistudio.google.com" target="_blank" class="text-emerald-600 underline font-semibold">Google AI Studio</a>.</li>
-                    <li>Login dengan akun Google berbayar (AI Pro) atau gratis Anda.</li>
-                    <li>Klik tombol <strong>"Get API Key"</strong> di sebelah kiri atas.</li>
-                    <li>Buat kunci baru (*Create API Key*) lalu salin kodenya ke sini.</li>
-                </ol>
-            </div>
-
-            <div class="space-y-3">
-                <label class="block text-xs font-bold text-stone-700">Google Gemini API Key</label>
-                <input type="password" id="apiKeyInput" placeholder="AIzaSy..." class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                <p class="text-[10px] text-stone-400">API Key disimpan dengan aman secara lokal di peramban (browser) Anda.</p>
-            </div>
-
-            <div class="flex gap-2 mt-6">
-                <button onclick="closeModal('apiModal')" class="flex-1 py-2.5 bg-stone-100 hover:bg-stone-200 rounded-xl text-xs font-bold text-stone-600 transition-all">Batal</button>
-                <button onclick="saveApiKey()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 rounded-xl text-xs font-bold text-white transition-all shadow-md shadow-emerald-200">Simpan API Key</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal 2: Edit Profile & Medical Conditions -->
-    <div id="profileModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-xl border border-stone-100 relative max-h-[90vh] overflow-y-auto custom-scrollbar">
-            <button onclick="closeModal('profileModal')" class="absolute top-4 right-4 p-1 hover:bg-stone-100 rounded-lg transition-all text-stone-400">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-            <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 rounded-xl bg-emerald-600/10 flex items-center justify-center text-emerald-700">
-                    <i data-lucide="sliders" class="w-5 h-5"></i>
-                </div>
+            <div class="overflow-y-auto flex-1 pr-1 flex flex-col gap-5">
+                <!-- Grafik Batang Sederhana 7 Hari Terakhir -->
                 <div>
-                    <h3 class="font-bold text-stone-900 text-base">Profil & Target Kesehatan</h3>
-                    <p class="text-xs text-stone-500">AI akan menyesuaikan semua rekomendasi gizi Anda</p>
+                    <h4 class="text-xs font-bold text-slate-600 mb-3 uppercase tracking-wider">Konsumsi Kalori (7 Hari Terakhir)</h4>
+                    <div class="flex items-end justify-between h-24 pt-4 px-2 bg-slate-50 rounded-2xl border border-slate-100" id="chart-bars-container">
+                        <!-- Batang di-render via JS -->
+                    </div>
                 </div>
-            </div>
 
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="block text-xs font-bold text-stone-700 mb-1">Gender</label>
-                    <select id="userGender" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:ring-2 focus:ring-emerald-500">
-                        <option value="Wanita">Wanita</option>
-                        <option value="Pria">Pria</option>
-                    </select>
+                <!-- Rata-Rata Gizi Mingguan -->
+                <div class="bg-emerald-50/40 border border-emerald-100 p-4 rounded-2xl">
+                    <h4 class="text-xs font-bold text-emerald-800 mb-2">Rerata Konsumsi Mingguan</h4>
+                    <div class="grid grid-cols-3 gap-2 text-center">
+                        <div class="bg-white p-2 rounded-xl">
+                            <span class="text-[9px] text-slate-400 block font-semibold uppercase">Kalori</span>
+                            <span class="text-xs font-bold text-slate-800" id="avg-calories">0 kkal</span>
+                        </div>
+                        <div class="bg-white p-2 rounded-xl">
+                            <span class="text-[9px] text-slate-400 block font-semibold uppercase">Protein</span>
+                            <span class="text-xs font-bold text-slate-800" id="avg-protein">0g</span>
+                        </div>
+                        <div class="bg-white p-2 rounded-xl">
+                            <span class="text-[9px] text-slate-400 block font-semibold uppercase">Air Minum</span>
+                            <span class="text-xs font-bold text-slate-800" id="avg-water">0 ml</span>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-stone-700 mb-1">Usia (Tahun)</label>
-                    <input type="number" id="userAge" value="26" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:ring-2 focus:ring-emerald-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-stone-700 mb-1">Berat Saat Ini (kg)</label>
-                    <input type="number" id="userWeight" value="65" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:ring-2 focus:ring-emerald-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-stone-700 mb-1">Target Berat (kg)</label>
-                    <input type="number" id="userTargetWeight" value="58" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:ring-2 focus:ring-emerald-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-stone-700 mb-1">Tinggi Badan (cm)</label>
-                    <input type="number" id="userHeight" value="160" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:ring-2 focus:ring-emerald-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-stone-700 mb-1">Aktivitas Harian</label>
-                    <select id="userActivity" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:ring-2 focus:ring-emerald-500">
-                        <option value="Sangat Ringan">Sangat Ringan (Banyak Duduk)</option>
-                        <option value="Sedang" selected>Sedang (Aktif Ringan)</option>
-                        <option value="Sangat Aktif">Sangat Aktif (Olahraga Teratur)</option>
-                    </select>
-                </div>
-            </div>
 
-            <div class="mb-4">
-                <label class="block text-xs font-bold text-stone-700 mb-2">Kondisi Kesehatan / Keluhan Medis (Bisa pilih lebih dari satu)</label>
-                <div class="grid grid-cols-2 gap-2 text-xs">
-                    <label class="flex items-center gap-2 p-2 rounded-lg border border-stone-100 hover:bg-stone-50 cursor-pointer">
-                        <input type="checkbox" name="condition" value="GERD" class="rounded text-emerald-600 focus:ring-emerald-500"> GERD / Asam Lambung
-                    </label>
-                    <label class="flex items-center gap-2 p-2 rounded-lg border border-stone-100 hover:bg-stone-50 cursor-pointer">
-                        <input type="checkbox" name="condition" value="PCOS" class="rounded text-emerald-600 focus:ring-emerald-500"> PCOS / Hormon
-                    </label>
-                    <label class="flex items-center gap-2 p-2 rounded-lg border border-stone-100 hover:bg-stone-50 cursor-pointer">
-                        <input type="checkbox" name="condition" value="Hipertensi" class="rounded text-emerald-600 focus:ring-emerald-500"> Hipertensi (Darah Tinggi)
-                    </label>
-                    <label class="flex items-center gap-2 p-2 rounded-lg border border-stone-100 hover:bg-stone-50 cursor-pointer">
-                        <input type="checkbox" name="condition" value="Asam Urat" class="rounded text-emerald-600 focus:ring-emerald-500"> Asam Urat
-                    </label>
-                    <label class="flex items-center gap-2 p-2 rounded-lg border border-stone-100 hover:bg-stone-50 cursor-pointer">
-                        <input type="checkbox" name="condition" value="Kolesterol" class="rounded text-emerald-600 focus:ring-emerald-500"> Kolesterol Tinggi
-                    </label>
-                    <label class="flex items-center gap-2 p-2 rounded-lg border border-stone-100 hover:bg-stone-50 cursor-pointer">
-                        <input type="checkbox" name="condition" value="Diabetes" class="rounded text-emerald-600 focus:ring-emerald-500"> Diabetes / Resistensi Insulin
-                    </label>
-                </div>
-            </div>
-
-            <div class="mb-4">
-                <label class="block text-xs font-bold text-stone-700 mb-1">Preferensi Pola Makan</label>
-                <select id="userDiet" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:ring-2 focus:ring-emerald-500">
-                    <option value="Semua Makanan" selected>Semua Makanan (Bebas)</option>
-                    <option value="Vegetarian">Vegetarian</option>
-                    <option value="Halal Only">Halal</option>
-                    <option value="Bebas Gluten">Bebas Gluten / Celiac</option>
-                    <option value="Rendah Karbohidrat">Rendah Karbohidrat</option>
-                </select>
-            </div>
-
-            <div class="flex gap-2 mt-6">
-                <button onclick="closeModal('profileModal')" class="flex-1 py-2.5 bg-stone-100 hover:bg-stone-200 rounded-xl text-xs font-bold text-stone-600 transition-all">Batal</button>
-                <button onclick="saveUserProfile()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 rounded-xl text-xs font-bold text-white transition-all shadow-md shadow-emerald-200">Perbarui Profil</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal 3: Historical Data & Graphs Dashboard -->
-    <div id="historyModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-        <div class="bg-white rounded-3xl max-w-xl w-full p-6 shadow-xl border border-stone-100 relative max-h-[85vh] overflow-y-auto custom-scrollbar">
-            <button onclick="closeModal('historyModal')" class="absolute top-4 right-4 p-1 hover:bg-stone-100 rounded-lg transition-all text-stone-400">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-            <div class="flex items-center gap-3 mb-6">
-                <div class="w-10 h-10 rounded-xl bg-emerald-600/10 flex items-center justify-center text-emerald-700">
-                    <i data-lucide="calendar" class="w-5 h-5"></i>
-                </div>
+                <!-- Riwayat Log Logis Harian -->
                 <div>
-                    <h3 class="font-bold text-stone-900 text-base">Riwayat Gizi & Laporan Bulanan</h3>
-                    <p class="text-xs text-stone-500">Lacak konsistensi gizi harian dan mingguan Anda</p>
-                </div>
-            </div>
-
-            <!-- Weekly Vertical Graph (7 Days) -->
-            <div class="mb-6">
-                <h4 class="text-xs font-bold text-stone-700 mb-3 flex items-center gap-1">
-                    <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-emerald-600"></i> Konsumsi Kalori 7 Hari Terakhir
-                </h4>
-                <div class="bg-stone-50 rounded-2xl p-4 border border-stone-100">
-                    <div class="flex justify-between items-end h-32 gap-2 px-2" id="weeklyChartBars">
-                        <!-- Bars dynamically loaded here -->
+                    <h4 class="text-xs font-bold text-slate-600 mb-2.5 uppercase tracking-wider">Log Riwayat Tanggal</h4>
+                    <div class="flex flex-col gap-2" id="history-log-list">
+                        <!-- Log riwayat di-render via JS -->
                     </div>
                 </div>
             </div>
-
-            <!-- Key Weekly Averages Info -->
-            <div class="grid grid-cols-3 gap-3 mb-6">
-                <div class="bg-emerald-50/40 p-3 rounded-xl border border-emerald-100/50 text-center">
-                    <p class="text-[10px] text-stone-500 font-semibold">Rata-rata Kalori</p>
-                    <p class="text-sm font-black text-emerald-700 mt-1" id="avgCalories">0 kcal</p>
-                </div>
-                <div class="bg-amber-50/40 p-3 rounded-xl border border-amber-100/50 text-center">
-                    <p class="text-[10px] text-stone-500 font-semibold">Rata-rata Air</p>
-                    <p class="text-sm font-black text-amber-700 mt-1" id="avgWater">0.0 L</p>
-                </div>
-                <div class="bg-blue-50/40 p-3 rounded-xl border border-blue-100/50 text-center">
-                    <p class="text-[10px] text-stone-500 font-semibold">Rata-rata Protein</p>
-                    <p class="text-sm font-black text-blue-700 mt-1" id="avgProtein">0g</p>
-                </div>
-            </div>
-
-            <!-- Log Entries by Date -->
-            <div>
-                <h4 class="text-xs font-bold text-stone-700 mb-2 flex items-center gap-1">
-                    <i data-lucide="list-video" class="w-3.5 h-3.5 text-emerald-600"></i> Catatan Harian Lengkap
-                </h4>
-                <div class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1" id="historyLogList">
-                    <!-- Log entries loaded here -->
-                </div>
-            </div>
-
-            <div class="mt-6 flex gap-2">
-                <button onclick="closeModal('historyModal')" class="flex-1 py-2.5 bg-stone-100 hover:bg-stone-200 rounded-xl text-xs font-bold text-stone-600 transition-all text-center">Tutup Laporan</button>
-            </div>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-white border-t border-stone-100 py-4 px-6 text-center text-xs text-stone-400">
-        <p>© 2026 NutriCoach AI. Dikembangkan secara khusus untuk mendukung kesehatan tanpa diet ekstrem.</p>
-    </footer>
+    <!-- PROFILE USER SETTING BAR (BOTTOM BAR SIMULATOR) -->
+    <div class="fixed bottom-0 inset-x-0 bg-white border-t border-slate-100 py-2 px-4 shadow-2xl z-30">
+        <div class="max-w-2xl mx-auto flex justify-between items-center gap-4">
+            <div class="flex items-center gap-2 overflow-x-auto py-1 no-scrollbar text-xs">
+                <span class="font-bold text-slate-400 text-[10px] uppercase tracking-wider block whitespace-nowrap">Profil:</span>
+                <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full font-semibold flex items-center gap-1 shrink-0">
+                    <i class="fa-solid fa-venus text-rose-500"></i> Perempuan (25th)
+                </span>
+                <span class="bg-emerald-50 text-emerald-800 px-2.5 py-1 rounded-full font-semibold flex items-center gap-1 shrink-0">
+                    <i class="fa-solid fa-weight-scale"></i> BB Target: 52kg
+                </span>
+                <span class="bg-rose-50 text-rose-800 px-2.5 py-1 rounded-full font-semibold flex items-center gap-1 shrink-0">
+                    <i class="fa-solid fa-droplet"></i> Fase Menstruasi: PMS
+                </span>
+            </div>
+            <span class="text-[10px] text-slate-400 font-semibold shrink-0">Bebas Diet Toksik</span>
+        </div>
+    </div>
 
-    <!-- Script Logika Utama Aplikasi -->
+    <!-- MAIN JAVASCRIPT CODE -->
     <script>
-        // System Prompt yang diinputkan pengguna, akan dikirim ke Gemini API
-        const systemPrompt = `Kamu adalah AI Nutrition Coach & Smart Diet Companion pribadi yang membantu pengguna menjalani pola makan sehat, nyaman, realistis, dan berkelanjutan tanpa diet ekstrem atau toxic diet culture.
-Tujuan utama:
-- membantu pengguna menurunkan atau menjaga berat badan dengan sehat,
-- membantu memahami pola makan harian maupun jangka panjang (mingguan),
-- membantu memilih makanan yang lebih baik,
-- menghitung kalori dan gizi otomatis,
-- memberi rekomendasi makan berdasarkan kondisi kesehatan,
-- memahami hormon dan siklus wanita,
-- membuat pengguna tetap bisa makan enak tanpa merasa tersiksa.
-
-KARAKTER AI
-AI harus: suportif, hangat, realistis, tidak menghakimi, tidak membuat pengguna merasa gagal, berbicara seperti nutrition coach modern dan wellness companion.
-Hindari kalimat: "kamu gagal diet", "jangan makan ini lagi", "makanan ini buruk".
-Gunakan kalimat: "lebih baik dibatasi", "boleh sesekali", "opsi yang lebih aman", "coba alternatif yang lebih ringan", "kita fokus konsistensi jangka panjang".
-
-KEMAMPUAN UTAMA:
-1. Analisis Makanan dari Berbagai Input (Nama menu, deskripsi porsi, dsb).
-2. Perhitungan Gizi otomatis (Estimasi Kalori, Protein, Lemak, Karbohidrat, Gula, Garam/Sodium, Serat, dsb).
-3. Menggunakan data gizi resmi restoran/brand bila ada, atau estimasi berbasis porsi makanan khas Indonesia.
-4. Memahami hormonal & siklus menstruasi wanita dan dampaknya bagi berat badan (water retention), energi, serta cravings.
-5. Smart Health Analysis (Kualitas nutrisi, kesesuaian kondisi medis seperti GERD, PCOS, Hipertensi, Asam Urat, dsb).
-6. Rekomendasi Food Swap yang realistis (Contoh: ayam goreng tepung diganti ayam panggang, bumbu terpisah, es teh manis less sugar).
-7. Evaluasi Sejarah Konsumsi Mingguan (Gunakan informasi riwayat gizi 7 hari terakhir yang dilampirkan oleh sistem untuk menganalisis kemajuan dan pola makan pengguna jika mereka bertanya, beri feedback yang membangun).
-
-FORMAT OUTPUT WAJIB:
-Tampilkan respon dengan format Markdown yang rapi, modern, indah, terstruktur dengan subjudul atau ikon menarik:
-1. **Ringkasan Nutrisi Estimasi** (Sajikan dalam bentuk tabel ringkas atau poin berurutan yang memuat Kalori, Protein, Lemak, Karbohidrat, Gula, Sodium, Serat jika menambahkan catatan makanan baru).
-2. **Analisis Coach** (Apa yang sudah bagus hari ini, apa yang perlu diperhatikan seperti kadar garam atau minyak berlebih).
-3. **Health Insight** (Hubungan dengan siklus menstruasi/hormon saat ini atau kondisi medis pengguna).
-4. **Rekomendasi Nyaman Berikutnya** (Saran konkret untuk sisa hari ini atau besok).
-
-PENTING: Selalu tambahkan format data JSON khusus di akhir respon Anda agar aplikasi web bisa menangkap datanya secara terprogram untuk memperbarui grafik progres secara dinamis jika pengguna mencatat makanan! Format JSON harus berada di dalam tag khusus agar mudah diparsing:
-\`\`\`json-nutrition
-{
-  "calories": [angka estimasi kalori],
-  "protein": [angka protein dalam gram],
-  "carbs": [angka karbohidrat dalam gram],
-  "fat": [angka lemak dalam gram],
-  "water": [angka dalam liter, default 0 atau 0.3-0.5 jika minum dicatat]
-}
-\`\`\`
-Pastikan Anda merespon ramah dengan bahasa Indonesia.`;
-
-        // Database Keadaan Awal (Telah Dimodifikasi untuk Menyimpan Riwayat/History)
-        let userState = {
-            apiKey: '',
-            gender: 'Wanita',
-            age: 26,
-            weight: 65,
-            targetWeight: 58,
-            height: 160,
-            activity: 'Sedang',
-            diet: 'Semua Makanan',
-            conditions: [],
-            currentCyclePhase: 'Menstruasi',
-            dailyStats: {
-                calories: 0,
-                protein: 0,
-                carbs: 0,
-                fat: 0,
-                water: 0
-            },
-            history: {}, // Format: "YYYY-MM-DD": { calories, protein, carbs, fat, water }
-            chatHistory: []
+        // TARGET NUTRISI DEFAULT
+        const targetNutrition = {
+            calories: 2000,
+            carbs: 250,
+            protein: 75,
+            fat: 65
         };
 
-        // Siklus Hormon Data
-        const cycleData = {
-            'Menstruasi': 'Fase Menstruasi: Tubuh rentan lelah, sensitif, dan butuh asupan zat besi tinggi. Perbanyak protein hangat, sup kaldu, dan sayuran hijau hangat.',
-            'Folikuler': 'Fase Folikuler: Energi mulai meningkat, metabolisme sedang stabil. Waktu yang tepat untuk fokus pada sayur segar, protein bersih, dan olahraga teratur.',
-            'Ovulasi': 'Fase Ovulasi: Energi berada di puncak! Tingkat kepuasan makan stabil. Bagus untuk makanan berenergi tinggi, lemak sehat (avocado, chia), serat tinggi.',
-            'Luteal (PMS)': 'Fase Luteal (PMS): Berat badan naik sementara akibat retensi air adalah hal normal. Cravings manis meningkat. Coba dark chocolate, pisang, atau yoghurt.'
-        };
-
-        // Mengambil string tanggal berformat YYYY-MM-DD local
+        // MEMBACA DAN MENYIMPAN DATABASE TANGGAL KE LOCALSTORAGE
         function getTodayDateString() {
-            const date = new Date();
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            let mm = today.getMonth() + 1;
+            let dd = today.getDate();
+            if (dd < 10) dd = '0' + dd;
+            if (mm < 10) mm = '0' + mm;
+            return `${yyyy}-${mm}-${dd}`;
         }
 
-        // Inisialisasi Aplikasi saat Load
-        window.addEventListener('load', () => {
-            loadStateFromLocalStorage();
-            lucide.createIcons();
-            
-            // Cek apakah berganti hari, sinkronkan data harian dari history
-            checkDayTransition();
-            
-            updateUI();
-            
-            // Set teks tanggal hari ini di UI
-            const options = { year: 'numeric', month: 'long', day: 'numeric' };
-            document.getElementById('currentDate').innerText = new Date().toLocaleDateString('id-ID', options);
-        });
+        function formatDateReadable(dateStr) {
+            const parts = dateStr.split('-');
+            if (parts.length !== 3) return dateStr;
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+            return `${parts[2]} ${months[parseInt(parts[1]) - 1]} ${parts[0]}`;
+        }
 
-        // Memeriksa transisi hari
-        function checkDayTransition() {
-            const todayStr = getTodayDateString();
-            if (!userState.history) {
-                userState.history = {};
+        function getFullDatabase() {
+            const db = localStorage.getItem('nutricoach_daily_db');
+            return db ? JSON.parse(db) : {};
+        }
+
+        function saveFullDatabase(db) {
+            localStorage.setItem('nutricoach_daily_db', JSON.stringify(db));
+        }
+
+        function getTodayData() {
+            const db = getFullDatabase();
+            const dateStr = getTodayDateString();
+            if (!db[dateStr]) {
+                db[dateStr] = {
+                    calories: 0,
+                    carbs: 0,
+                    protein: 0,
+                    fat: 0,
+                    sugar: 0,
+                    sodium: 0,
+                    fiber: 0,
+                    water: 0
+                };
+                saveFullDatabase(db);
             }
+            return db[dateStr];
+        }
+
+        function saveTodayData(data) {
+            const db = getFullDatabase();
+            const dateStr = getTodayDateString();
+            db[dateStr] = data;
+            saveFullDatabase(db);
+            updateDashboardUI();
+        }
+
+        // TAMPILKAN / UPDATE DATA KE INTERFACE
+        function updateDashboardUI() {
+            const data = getTodayData();
             
-            // Jika hari ini sudah ada catatannya di history, ambil agar sinkron
-            if (userState.history[todayStr]) {
-                userState.dailyStats = { ...userState.history[todayStr] };
+            document.getElementById('current-calories').innerText = Math.round(data.calories);
+            document.getElementById('current-carbs').innerText = Math.round(data.carbs);
+            document.getElementById('current-protein').innerText = Math.round(data.protein);
+            document.getElementById('current-fat').innerText = Math.round(data.fat);
+            document.getElementById('current-sugar').innerText = Math.round(data.sugar);
+            document.getElementById('current-sodium').innerText = Math.round(data.sodium);
+            document.getElementById('current-fiber').innerText = Math.round(data.fiber);
+            document.getElementById('current-water').innerText = Math.round(data.water);
+
+            // Progress Bar Kalori
+            const percent = Math.min(100, Math.round((data.calories / targetNutrition.calories) * 100));
+            document.getElementById('calories-percent').innerText = `${percent}%`;
+            document.getElementById('calories-progress-bar').style.width = `${percent}%`;
+
+            // Tanggal Hari Ini
+            document.getElementById('display-date').innerText = formatDateReadable(getTodayDateString());
+        }
+
+        // TAMBAH MINUM AIR SECARA CEPAT
+        function addWater(amount) {
+            const data = getTodayData();
+            data.water += amount;
+            saveTodayData(data);
+            showToast(`Berhasil menambahkan ${amount} ml air minum! 💧`);
+        }
+
+        // RESET DATA HARI INI
+        function resetTodayData() {
+            if (confirm("Apakah Anda yakin ingin mengulang pencatatan gizi hari ini ke angka 0?")) {
+                const data = getTodayData();
+                data.calories = 0;
+                data.carbs = 0;
+                data.protein = 0;
+                data.fat = 0;
+                data.sugar = 0;
+                data.sodium = 0;
+                data.fiber = 0;
+                data.water = 0;
+                saveTodayData(data);
+                showToast("Data gizi hari ini berhasil direset!");
+            }
+        }
+
+        // SETUP API KEY MODAL
+        function openApiKeyModal() {
+            const savedKey = localStorage.getItem('google_gemini_api_key') || '';
+            document.getElementById('api-key-input').value = savedKey;
+            
+            const modal = document.getElementById('api-key-modal');
+            const content = document.getElementById('api-modal-content');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            content.classList.remove('scale-95');
+        }
+
+        function closeApiKeyModal() {
+            const modal = document.getElementById('api-key-modal');
+            const content = document.getElementById('api-modal-content');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            content.classList.add('scale-95');
+        }
+
+        function saveApiKey() {
+            const key = document.getElementById('api-key-input').value.trim();
+            if (key) {
+                localStorage.setItem('google_gemini_api_key', key);
+                showToast("API Key berhasil disimpan dengan aman! 🔑");
+                closeApiKeyModal();
             } else {
-                // Jika hari baru, buat slot kosong di history dan kosongkan progres harian di dasbor
-                userState.dailyStats = { calories: 0, protein: 0, carbs: 0, fat: 0, water: 0 };
-                userState.history[todayStr] = { ...userState.dailyStats };
-                saveToLocalStorage();
+                localStorage.removeItem('google_gemini_api_key');
+                showToast("API Key dihapus. Aplikasi berjalan dalam mode simulasi.");
+                closeApiKeyModal();
             }
         }
 
-        // Simpan & Ambil Data dari Local Storage
-        function saveToLocalStorage() {
-            localStorage.setItem('nutricoach_state', JSON.stringify(userState));
-        }
-
-        function loadStateFromLocalStorage() {
-            const saved = localStorage.getItem('nutricoach_state');
-            if (saved) {
-                const parsed = JSON.parse(saved);
-                // Pastikan key history ada untuk kompatibilitas data lama
-                if (!parsed.history) parsed.history = {};
-                userState = parsed;
-                
-                // Sinkronkan ke modal input
-                document.getElementById('userGender').value = userState.gender;
-                document.getElementById('userAge').value = userState.age;
-                document.getElementById('userWeight').value = userState.weight;
-                document.getElementById('userTargetWeight').value = userState.targetWeight;
-                document.getElementById('userHeight').value = userState.height;
-                document.getElementById('userActivity').value = userState.activity;
-                document.getElementById('userDiet').value = userState.diet;
-                
-                // Checkbox kondisi
-                document.querySelectorAll('input[name="condition"]').forEach(cb => {
-                    cb.checked = userState.conditions.includes(cb.value);
-                });
-
-                // Restore Chat History jika ada
-                if (userState.chatHistory && userState.chatHistory.length > 0) {
-                    const container = document.getElementById('chatContainer');
-                    userState.chatHistory.forEach(msg => {
-                        appendMessageToUI(msg.role, msg.text, false);
-                    });
-                }
-            }
-        }
-
-        // Update Seluruh Komponen UI Utama
-        function updateUI() {
-            // Update Dashboard Gizi
-            document.getElementById('caloriesValue').innerText = Math.round(userState.dailyStats.calories);
-            const calPercentage = Math.min((userState.dailyStats.calories / 2000) * 100, 100);
-            document.getElementById('caloriesBar').style.width = `${calPercentage}%`;
-
-            document.getElementById('waterValue').innerText = userState.dailyStats.water.toFixed(1);
-            const waterPercentage = Math.min((userState.dailyStats.water / 2.5) * 100, 100);
-            document.getElementById('waterBar').style.width = `${waterPercentage}%`;
-
-            document.getElementById('proteinText').innerText = `${Math.round(userState.dailyStats.protein)} / 120g`;
-            document.getElementById('proteinBar').style.width = `${Math.min((userState.dailyStats.protein / 120) * 100, 100)}%`;
-
-            document.getElementById('carbsText').innerText = `${Math.round(userState.dailyStats.carbs)} / 250g`;
-            document.getElementById('carbsBar').style.width = `${Math.min((userState.dailyStats.carbs / 250) * 100, 100)}%`;
-
-            document.getElementById('fatText').innerText = `${Math.round(userState.dailyStats.fat)} / 65g`;
-            document.getElementById('fatBar').style.width = `${Math.min((userState.dailyStats.fat / 65) * 100, 100)}%`;
-
-            // Update Cycle
-            document.getElementById('cycleStatusBadge').innerText = userState.currentCyclePhase;
-            document.getElementById('cycleAdviseText').innerHTML = `<strong>Fase ${userState.currentCyclePhase}:</strong> ${cycleData[userState.currentCyclePhase]}`;
-            
-            // Ubah style tombol siklus aktif
-            document.querySelectorAll('.phase-btn').forEach(btn => {
-                btn.className = "phase-btn p-2 rounded-xl text-[10px] font-bold border transition-all bg-stone-50 border-stone-200 text-stone-600";
-            });
-            const activeBtnMap = {
-                'Menstruasi': 'phaseBtn-Menstruasi',
-                'Folikuler': 'phaseBtn-Folikuler',
-                'Ovulasi': 'phaseBtn-Ovulasi',
-                'Luteal (PMS)': 'phaseBtn-Luteal'
-            };
-            const activeBtnId = activeBtnMap[userState.currentCyclePhase];
-            if (activeBtnId) {
-                document.getElementById(activeBtnId).className = "phase-btn p-2 rounded-xl text-[10px] font-bold border transition-all bg-rose-50 border-rose-200 text-rose-700";
-            }
-
-            // Update Card Profil
-            document.getElementById('profileGoalText').innerText = userState.weight > userState.targetWeight ? "Menurunkan Berat Badan" : "Menjaga Berat Badan";
-            document.getElementById('pWeight').innerText = userState.weight;
-            document.getElementById('pTargetWeight').innerText = userState.targetWeight;
-            document.getElementById('pConditions').innerText = userState.conditions.length > 0 ? userState.conditions.join(', ') : 'Tidak ada';
-            document.getElementById('pActivity').innerText = userState.activity;
-            document.getElementById('pDiet').innerText = userState.diet;
-
-            // API Key Badge Indicator
-            const apiBadge = document.getElementById('apiBadge');
-            if (userState.apiKey) {
-                apiBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> API Key Aktif`;
-                apiBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 transition-all hover:bg-emerald-100";
-            } else {
-                apiBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> Setup API Key`;
-                apiBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 transition-all hover:bg-amber-100";
-            }
-        }
-
-        // Navigasi & Modal Controls
-        function openModal(id) {
-            document.getElementById(id).classList.remove('hidden');
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
-        }
-
-        // Membuka modal khusus Riwayat & merender grafis serta daftarnya secara dinamis
+        // MODAL RIWAYAT & GRAFIK
         function openHistoryModal() {
-            renderHistoryData();
-            openModal('historyModal');
+            const modal = document.getElementById('history-modal');
+            const content = document.getElementById('history-modal-content');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            content.classList.remove('scale-95');
+            renderHistoryDashboard();
         }
 
-        // Render Grafik Mingguan dan Data Riwayat
-        function renderHistoryData() {
-            const todayStr = getTodayDateString();
-            const last7Days = [];
+        function closeHistoryModal() {
+            const modal = document.getElementById('history-modal');
+            const content = document.getElementById('history-modal-content');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            content.classList.add('scale-95');
+        }
+
+        function renderHistoryDashboard() {
+            const db = getFullDatabase();
+            const dates = Object.keys(db).sort().reverse(); // Urutan terbaru di atas
             
-            // Hitung 7 hari terakhir ke belakang
+            // Ambil 7 hari terakhir untuk grafik
+            const last7Days = [];
             for (let i = 6; i >= 0; i--) {
-                const d = new Date();
-                d.setDate(d.getDate() - i);
-                const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-                last7Days.push(dateStr);
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                const yyyy = date.getFullYear();
+                let mm = date.getMonth() + 1;
+                let dd = date.getDate();
+                if (dd < 10) dd = '0' + dd;
+                if (mm < 10) mm = '0' + mm;
+                const dStr = `${yyyy}-${mm}-${dd}`;
+                last7Days.push({
+                    date: dStr,
+                    dayName: date.toLocaleDateString('id-ID', { weekday: 'short' }),
+                    calories: db[dStr] ? db[dStr].calories : 0
+                });
             }
 
-            // 1. Render Grafik Batang Kalori
-            const chartContainer = document.getElementById('weeklyChartBars');
+            // Render Grafik Batang
+            const chartContainer = document.getElementById('chart-bars-container');
             chartContainer.innerHTML = '';
             
-            let totalCalSum = 0;
-            let totalWaterSum = 0;
-            let totalProteinSum = 0;
-            let loggedDaysCount = 0;
+            const maxCalValue = Math.max(...last7Days.map(d => d.calories), 2000); // Batas tinggi grafis
 
-            last7Days.forEach(dateStr => {
-                const data = userState.history[dateStr] || { calories: 0, protein: 0, carbs: 0, fat: 0, water: 0 };
-                const cal = data.calories || 0;
-                
-                totalCalSum += cal;
-                totalWaterSum += data.water || 0;
-                totalProteinSum += data.protein || 0;
-                if (cal > 0 || data.water > 0) loggedDaysCount++;
-
-                // Format nama hari (Misal: Sen, Sel, Rab, dsb)
-                const dObj = new Date(dateStr);
-                const dayName = dObj.toLocaleDateString('id-ID', { weekday: 'short' });
-                
-                // Tinggi maksimal 100% dari target 2000 kcal
-                const barHeightPct = Math.min((cal / 2000) * 100, 100);
-
-                const barHTML = `
-                    <div class="flex-1 flex flex-col items-center h-full justify-end">
-                        <span class="text-[9px] font-bold text-stone-500 mb-1">${Math.round(cal)}</span>
-                        <div class="w-full bg-emerald-100 rounded-t-lg transition-all duration-500 overflow-hidden group hover:bg-emerald-200 cursor-pointer" style="height: ${Math.max(barHeightPct, 4)}%">
-                            <div class="w-full bg-emerald-600 h-full"></div>
-                        </div>
-                        <span class="text-[10px] font-semibold text-stone-400 mt-2">${dayName}</span>
+            last7Days.forEach(day => {
+                const heightPercent = Math.min(100, (day.calories / maxCalValue) * 100);
+                const bar = document.createElement('div');
+                bar.className = "flex flex-col items-center gap-1.5 h-full flex-1";
+                bar.innerHTML = `
+                    <div class="text-[8px] font-bold text-slate-500">${Math.round(day.calories)}</div>
+                    <div class="w-4 bg-emerald-500 rounded-t-full transition-all duration-500 relative group" style="height: ${heightPercent}%;">
+                        <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block bg-slate-900 text-white text-[8px] px-1.5 py-0.5 rounded whitespace-nowrap z-50">${formatDateReadable(day.date)}</span>
                     </div>
+                    <div class="text-[9px] font-bold text-slate-600">${day.dayName}</div>
                 `;
-                chartContainer.insertAdjacentHTML('beforeend', barHTML);
+                chartContainer.appendChild(bar);
             });
 
-            // 2. Hitung Rata-rata Mingguan
-            const divisor = loggedDaysCount || 1;
-            document.getElementById('avgCalories').innerText = `${Math.round(totalCalSum / divisor)} kcal`;
-            document.getElementById('avgWater').innerText = `${(totalWaterSum / divisor).toFixed(1)} L`;
-            document.getElementById('avgProtein').innerText = `${Math.round(totalProteinSum / divisor)}g`;
+            // Hitung Rata-Rata Mingguan
+            const activeDaysCount = last7Days.filter(d => d.calories > 0).length || 1;
+            const totalCalories = last7Days.reduce((acc, curr) => acc + curr.calories, 0);
+            const totalProtein = last7Days.reduce((acc, curr) => {
+                const dayData = db[curr.date];
+                return acc + (dayData ? dayData.protein : 0);
+            }, 0);
+            const totalWater = last7Days.reduce((acc, curr) => {
+                const dayData = db[curr.date];
+                return acc + (dayData ? dayData.water : 0);
+            }, 0);
 
-            // 3. Render Riwayat List Tanggal Lengkap
-            const listContainer = document.getElementById('historyLogList');
-            listContainer.innerHTML = '';
+            document.getElementById('avg-calories').innerText = `${Math.round(totalCalories / activeDaysCount)} kkal`;
+            document.getElementById('avg-protein').innerText = `${Math.round(totalProtein / activeDaysCount)}g`;
+            document.getElementById('avg-water').innerText = `${Math.round(totalWater / activeDaysCount)} ml`;
 
-            // Ambil semua entri tanggal dan urutkan dari terbaru ke terlama
-            const sortedDates = Object.keys(userState.history).sort((a, b) => new Date(b) - new Date(a));
+            // Render Daftar Riwayat Log
+            const logContainer = document.getElementById('history-log-list');
+            logContainer.innerHTML = '';
 
-            if (sortedDates.length === 0) {
-                listContainer.innerHTML = `<p class="text-xs text-stone-400 italic text-center py-4">Belum ada riwayat tercatat.</p>`;
+            if (dates.length === 0) {
+                logContainer.innerHTML = `<div class="text-center text-xs text-slate-400 py-6">Belum ada riwayat tercatat.</div>`;
                 return;
             }
 
-            sortedDates.forEach(dateStr => {
-                const data = userState.history[dateStr];
-                if (data.calories === 0 && data.water === 0) return; // Lewati hari kosong
-
-                const formattedDate = new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-                
-                const entryHTML = `
-                    <div class="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-100 text-xs hover:border-emerald-300 transition-all">
-                        <div>
-                            <p class="font-bold text-stone-800">${formattedDate}</p>
-                            <p class="text-[10px] text-stone-400 mt-1">Prot: ${Math.round(data.protein)}g | Karb: ${Math.round(data.carbs)}g | Lemak: ${Math.round(data.fat)}g</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="font-extrabold text-emerald-700">${Math.round(data.calories)} kcal</p>
-                            <p class="text-[10px] text-amber-600 font-medium">💧 ${data.water.toFixed(1)} L</p>
-                        </div>
+            dates.forEach(dateStr => {
+                const d = db[dateStr];
+                const logItem = document.createElement('div');
+                logItem.className = "bg-slate-50 border border-slate-100 p-3 rounded-2xl flex justify-between items-center";
+                logItem.innerHTML = `
+                    <div>
+                        <p class="text-xs font-bold text-slate-800">${formatDateReadable(dateStr)}</p>
+                        <p class="text-[10px] text-slate-400 mt-0.5">Air: ${d.water}ml | Prot: ${Math.round(d.protein)}g | Karb: ${Math.round(d.carbs)}g</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs font-extrabold text-emerald-700">${Math.round(d.calories)} kkal</span>
                     </div>
                 `;
-                listContainer.insertAdjacentHTML('beforeend', entryHTML);
+                logContainer.appendChild(logItem);
             });
-            
-            if (listContainer.children.length === 0) {
-                listContainer.innerHTML = `<p class="text-xs text-stone-400 italic text-center py-4">Belum ada riwayat konsumsi aktif.</p>`;
-            }
         }
 
-        // Menyimpan Pengaturan Profil
-        function saveUserProfile() {
-            userState.gender = document.getElementById('userGender').value;
-            userState.age = parseInt(document.getElementById('userAge').value) || 26;
-            userState.weight = parseInt(document.getElementById('userWeight').value) || 65;
-            userState.targetWeight = parseInt(document.getElementById('userTargetWeight').value) || 58;
-            userState.height = parseInt(document.getElementById('userHeight').value) || 160;
-            userState.activity = document.getElementById('userActivity').value;
-            userState.diet = document.getElementById('userDiet').value;
+        // NOTIFIKASI TOAST CUSTOM
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast-notif');
+            const icon = document.getElementById('toast-icon');
+            const msg = document.getElementById('toast-msg');
 
-            // Ambil checkbox kondisi medis
-            const checkedConditions = [];
-            document.querySelectorAll('input[name="condition"]:checked').forEach(cb => {
-                checkedConditions.push(cb.value);
-            });
-            userState.conditions = checkedConditions;
-
-            saveToLocalStorage();
-            updateUI();
-            closeModal('profileModal');
-            
-            // Tambahkan notifikasi di chat bahwa profil diubah
-            appendMessageToUI('system', `🔄 Profil diperbarui: Anda memiliki kondisi medis (${userState.conditions.join(', ') || 'Tidak Ada'}) dan pola makan ${userState.diet}. Coach akan menggunakannya untuk analisis berikutnya!`, false);
-        }
-
-        // Menyimpan API Key Google AI Studio
-        function saveApiKey() {
-            const key = document.getElementById('apiKeyInput').value.trim();
-            if (key) {
-                userState.apiKey = key;
-                saveToLocalStorage();
-                updateUI();
-                closeModal('apiModal');
-                appendMessageToUI('system', '🔑 Google AI Studio API Key berhasil dihubungkan! Anda sekarang bisa mengobrol langsung dengan mesin pintar AI Pro secara real-time.', false);
+            msg.innerText = message;
+            if (isError) {
+                icon.className = "fa-solid fa-circle-exclamation text-rose-500";
+                toast.classList.add('border-l-4', 'border-rose-500');
             } else {
-                alert('Silakan masukkan API Key yang valid.');
-            }
-        }
-
-        // Mengganti Fase Siklus Wanita
-        function setCyclePhase(phase) {
-            userState.currentCyclePhase = phase;
-            saveToLocalStorage();
-            updateUI();
-        }
-
-        // Fungsi Cepat Mengisi Chat dari Tombol Rekomendasi
-        function fillAndSend(text) {
-            document.getElementById('userInput').value = text;
-            document.getElementById('chatForm').dispatchEvent(new Event('submit'));
-        }
-
-        // Bersihkan Riwayat Chat & Reset Hari Ini
-        function clearChatHistory() {
-            if (confirm('Apakah Anda yakin ingin menghapus seluruh riwayat obrolan dan mereset grafik gizi hari ini?')) {
-                userState.chatHistory = [];
-                userState.dailyStats = { calories: 0, protein: 0, carbs: 0, fat: 0, water: 0 };
-                
-                // Hapus juga slot hari ini dari database riwayat
-                const todayStr = getTodayDateString();
-                userState.history[todayStr] = { ...userState.dailyStats };
-                
-                saveToLocalStorage();
-                
-                // Clear UI
-                const container = document.getElementById('chatContainer');
-                container.innerHTML = `
-                    <div class="flex gap-3 max-w-[85%]">
-                        <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-sm flex-shrink-0">🥑</div>
-                        <div class="bg-stone-100 rounded-2xl p-4 text-stone-800 text-sm leading-relaxed rounded-tl-none">
-                            Riwayat dihapus. Tuliskan makananmu hari ini untuk memulai analisis sehat baru! 💚
-                        </div>
-                    </div>
-                `;
-                updateUI();
-            }
-        }
-
-        // Cetak Pesan Baru ke Chat Area
-        function appendMessageToUI(role, text, isMarkdown = true) {
-            const container = document.getElementById('chatContainer');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = "flex gap-3 max-w-[85%] " + (role === 'user' ? 'ml-auto flex-row-reverse' : '');
-
-            let avatar = role === 'user' ? '🧑' : '🥑';
-            let bgClass = role === 'user' ? 'bg-emerald-600 text-white rounded-tr-none' : 'bg-stone-100 text-stone-800 rounded-tl-none';
-            
-            if (role === 'system') {
-                avatar = '⚙️';
-                bgClass = 'bg-amber-50 text-amber-900 border border-amber-200 rounded-lg text-xs w-full';
-                messageDiv.className = "flex gap-3 w-full my-2 justify-center";
+                icon.className = "fa-solid fa-circle-info text-emerald-400";
+                toast.classList.remove('border-l-4', 'border-rose-500');
             }
 
-            // Bersihkan format khusus JSON dari output chat yang ditampilkan agar terlihat bersih bagi pengguna
-            let cleanText = text;
-            const jsonRegex = /```json-nutrition[\s\S]*?```/;
-            cleanText = cleanText.replace(jsonRegex, '').trim();
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            toast.classList.add('opacity-100');
 
-            // Sederhana mengganti pola markdown menjadi HTML
-            let formattedText = cleanText;
-            if (isMarkdown && role !== 'system') {
-                formattedText = parseMarkdown(cleanText);
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 4500);
+        }
+
+        // PENGIRIMAN CHAT & PROMPT KE GEMINI DENGAN MEMORI 7 HARI TERAKHIR
+        async function sendMessage() {
+            const userInput = document.getElementById('user-input');
+            const userText = userInput.value.trim();
+            if (!userText) return;
+
+            // Tampilkan Pesan User di Chat Box
+            appendMessage(userText, 'user');
+            userInput.value = '';
+
+            // Periksa Keberadaan API Key
+            const apiKey = localStorage.getItem('google_gemini_api_key') || '';
+            if (!apiKey) {
+                showToast("Harap masukkan API Key Anda terlebih dahulu lewat tombol 'API Key' di pojok kanan atas!", true);
+                appendMessage("❌ <b>Gagal terhubung:</b> Anda belum menyetel API Key di pojok kanan atas. Silakan salin API Key gratis Anda dari Google AI Studio dan masukkan ke dalam aplikasi ini agar saya bisa menganalisis gizi Anda secara nyata.", 'ai');
+                return;
             }
 
-            messageDiv.innerHTML = `
-                <div class="w-8 h-8 rounded-full ${role === 'user' ? 'bg-emerald-200' : 'bg-stone-200'} flex items-center justify-center text-sm flex-shrink-0">${avatar}</div>
-                <div class="${bgClass} rounded-2xl p-4 text-sm leading-relaxed shadow-sm">
-                    ${formattedText}
-                </div>
-            `;
-            
-            container.appendChild(messageDiv);
-            container.scrollTop = container.scrollHeight;
-        }
-
-        // Markdown Parser Sederhana untuk mempercantik chat
-        function parseMarkdown(text) {
-            let html = text;
-            // Bold
-            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            // Lists
-            html = html.replace(/^\s*-\s*(.*)$/gmi, '<li class="ml-4 list-disc">$1</li>');
-            html = html.replace(/^\s*\*\s*(.*)$/gmi, '<li class="ml-4 list-disc">$1</li>');
-            // Headers
-            html = html.replace(/^\s*###\s*(.*)$/gmi, '<h4 class="font-bold text-base mt-3 mb-1 text-emerald-800">$1</h4>');
-            html = html.replace(/^\s*##\s*(.*)$/gmi, '<h3 class="font-bold text-lg mt-4 mb-2 text-emerald-900 border-b pb-1">$1</h3>');
-            // Paragraph breaks
-            html = html.replace(/\n/g, '<br>');
-            return html;
-        }
-
-        // Input & Kirim Pesan ke Gemini API
-        async function handleSendMessage(event) {
-            event.preventDefault();
-            const inputField = document.getElementById('userInput');
-            const userMsg = inputField.value.trim();
-            if (!userMsg) return;
-
-            // Tambahkan pesan user ke UI
-            appendMessageToUI('user', userMsg, false);
-            inputField.value = '';
-
-            // Masukkan ke riwayat
-            userState.chatHistory.push({ role: 'user', text: userMsg });
-
-            // Tampilkan Indikator Mengetik AI
-            const container = document.getElementById('chatContainer');
-            const typingDiv = document.createElement('div');
-            typingDiv.id = "typingIndicator";
-            typingDiv.className = "flex gap-3 max-w-[85%]";
-            typingDiv.innerHTML = `
-                <div class="w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center text-sm flex-shrink-0">🥑</div>
-                <div class="bg-stone-100 text-stone-500 rounded-2xl p-4 text-xs italic flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-stone-400 animate-bounce"></span>
-                    <span class="w-2 h-2 rounded-full bg-stone-400 animate-bounce" style="animation-delay: 0.2s"></span>
-                    <span class="w-2 h-2 rounded-full bg-stone-400 animate-bounce" style="animation-delay: 0.4s"></span>
-                    Coach sedang menganalisis nutrisi Anda...
-                </div>
-            `;
-            container.appendChild(typingDiv);
-            container.scrollTop = container.scrollHeight;
+            // Tampilkan Indikator Mengetik
+            const typingId = appendTypingIndicator();
 
             try {
-                let aiResponseText = "";
-                
-                // Cek apakah API Key ada
-                if (userState.apiKey) {
-                    aiResponseText = await callGeminiAPI(userMsg);
-                } else {
-                    // DEMO MODE - Jika API Key belum terpasang
-                    await new Promise(resolve => setTimeout(resolve, 2000)); // Simulasi delay
-                    aiResponseText = getMockResponse(userMsg);
+                // Kumpulkan riwayat 7 hari terakhir dari LocalStorage sebagai konteks
+                const db = getFullDatabase();
+                const last7DaysLogs = [];
+                for (let i = 6; i >= 0; i--) {
+                    const date = new Date();
+                    date.setDate(date.getDate() - i);
+                    const yyyy = date.getFullYear();
+                    let mm = date.getMonth() + 1;
+                    let dd = date.getDate();
+                    if (dd < 10) dd = '0' + dd;
+                    if (mm < 10) mm = '0' + mm;
+                    const dStr = `${yyyy}-${mm}-${dd}`;
+                    if (db[dStr]) {
+                        last7DaysLogs.push({
+                            tanggal: dStr,
+                            kalori: Math.round(db[dStr].calories),
+                            protein: Math.round(db[dStr].protein),
+                            lemak: Math.round(db[dStr].fat),
+                            karbohidrat: Math.round(db[dStr].carbs),
+                            gula: Math.round(db[dStr].sugar),
+                            sodium: Math.round(db[dStr].sodium)
+                        });
+                    }
                 }
 
-                // Hapus Typing Indicator
-                const indicator = document.getElementById('typingIndicator');
-                if (indicator) indicator.remove();
+                const memoryContext = last7DaysLogs.length > 0 
+                    ? `Berikut adalah data riwayat nutrisi pengguna dalam beberapa hari terakhir: \n${JSON.stringify(last7DaysLogs, null, 2)}\nGunakan riwayat ini jika pengguna bertanya tentang konsistensi pola makannya.`
+                    : "Belum ada riwayat konsumsi hari-hari sebelumnya yang tercatat.";
 
-                // Tampilkan Response AI ke UI
-                appendMessageToUI('model', aiResponseText, true);
-                userState.chatHistory.push({ role: 'model', text: aiResponseText });
+                // Siapkan Instruksi Sistem (System Prompt Anda)
+                const systemPrompt = `
+Kamu adalah AI Nutrition Coach & Smart Diet Companion pribadi yang membantu pengguna menjalani pola makan sehat, nyaman, realistis, dan berkelanjutan tanpa diet ekstrem atau toxic diet culture.
 
-                // Ekstrak data JSON dari response untuk memperbarui progress gizi di dasbor
-                extractNutritionData(aiResponseText);
-                
-                // Simpan keadaan terbaru
-                saveToLocalStorage();
+PROFIL DAN KONTEKS MEMORI PENGGUNA:
+- Jenis Kelamin: Perempuan (25 tahun)
+- Target Berat Badan: 52 kg (Fokus penurunan berat badan sehat tanpa stres)
+- Fase Hormonal Saat Ini: Fase PMS (Pratemu/Sebelum Haid). Karakteristik fase ini: nafsu makan meningkat, craving makanan manis/asin wajar terjadi, kemungkinan retensi cairan tubuh (berat timbangan naik sementara 0.5 - 2kg). Sangat dilarang keras memicu rasa bersalah!
+- ${memoryContext}
 
-            } catch (error) {
-                console.error(error);
-                const indicator = document.getElementById('typingIndicator');
-                if (indicator) indicator.remove();
-                
-                appendMessageToUI('system', `❌ Terjadi kesalahan koneksi atau API Key salah: ${error.message}. Pastikan koneksi internet lancar dan API Key Anda valid di Google AI Studio.`, false);
-            }
-        }
+Tujuan utama:
+1. Membantu pengguna menurunkan atau menjaga berat badan dengan sehat.
+2. Membantu memahami pola makan.
+3. Membantu memilih makanan yang lebih baik.
+4. Menghitung kalori dan gizi otomatis secara terperinci.
+5. Memberi rekomendasi makan berdasarkan kondisi kesehatan.
+6. Memahami hormon dan siklus wanita.
+7. Membuat pengguna tetap bisa makan enak tanpa merasa tersiksa.
 
-        // Memanggil API Google Gemini (Dengan Menyisipkan Memori 7 Hari Terakhir)
-        async function callGeminiAPI(userMessage) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${userState.apiKey}`;
-            
-            // 1. Ekstrak data riwayat gizi 7 hari terakhir dari memori HP
-            const last7Days = [];
-            let historySummary = "";
-            for (let i = 6; i >= 0; i--) {
-                const d = new Date();
-                d.setDate(d.getDate() - i);
-                const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-                last7Days.push(dateStr);
-            }
-            last7Days.forEach(dateStr => {
-                const data = userState.history[dateStr] || { calories: 0, protein: 0, carbs: 0, fat: 0, water: 0 };
-                historySummary += `- Tanggal ${dateStr}: Kalori: ${Math.round(data.calories)} kcal, Prot: ${Math.round(data.protein)}g, Karb: ${Math.round(data.carbs)}g, Lemak: ${Math.round(data.fat)}g, Air: ${data.water.toFixed(1)}L\n`;
-            });
+KARAKTER AI:
+AI harus suportif, hangat, realistis, tidak menghakimi, tidak membuat pengguna merasa gagal, dan berbicara seperti nutrition coach modern dan wellness companion.
+HINDARI kata/kalimat: "kamu gagal diet", "jangan makan ini lagi", "makanan ini buruk".
+GUNAKAN kalimat: "lebih baik dibatasi", "boleh sesekali", "opsi yang lebih aman", "coba alternatif yang lebih ringan", "kita fokus konsistensi jangka panjang".
 
-            // 2. Format konteks profil pengguna dan riwayat terbaru
-            const userContext = `
-INFORMASI PENGGUNA SAAT INI:
-- Jenis Kelamin: ${userState.gender}
-- Siklus Hormon Saat Ini: Fase ${userState.currentCyclePhase}
-- Kondisi Medis: ${userState.conditions.length > 0 ? userState.conditions.join(', ') : 'Tidak ada keluhan medis'}
-- Usia: ${userState.age} tahun, Berat: ${userState.weight} kg, Tinggi: ${userState.height} cm
-- Target Berat Badan: ${userState.targetWeight} kg
-- Pola Makan: ${userState.diet}
-- Aktivitas Harian: ${userState.activity}
+FORMAT OUTPUT DAILY YANG WAJIB ANDA BERIKAN:
+Setelah Anda selesai mengidentifikasi dan memperkirakan gizi makanan, Anda WAJIB membagi respons Anda menjadi 2 bagian utama:
 
-RIWAYAT GIZI 7 HARI TERAKHIR (Daftar otomatis dari database aplikasi):
-${historySummary}
-*(Gunakan data di atas jika pengguna menanyakan evaluasi pola makan mingguan, konsistensi kalori, atau efek makanan beberapa hari terakhir mereka).*
+BAGIAN 1: JSON DATA (WAJIB Diletakkan di bagian paling atas/bawah respons Anda di dalam tag <json_data>...</json_data> agar bisa dibaca sistem)
+Format persisnya harus seperti ini agar sistem otomatis menambahkan gizi ke grafik halaman utama:
+<json_data>
+{
+  "calories": [angka estimasi kalori makanan yang baru saja diinput],
+  "carbs": [angka karbohidrat dalam gram],
+  "protein": [angka protein dalam gram],
+  "fat": [angka lemak dalam gram],
+  "sugar": [angka gula dalam gram],
+  "sodium": [angka sodium dalam mg],
+  "fiber": [angka serat dalam gram]
+}
+</json_data>
+Catatan: Jika pengguna HANYA curhat atau tidak sedang mencatat makanan baru, isi semua nilai JSON tersebut dengan angka 0.
+
+BAGIAN 2: PENJELASAN CHAT (Tulis dengan bahasa Indonesia yang hangat, bersahabat, rapi menggunakan Markdown)
+Berisi:
+1. Ringkasan Nutrisi (Kalori, Protein, Lemak, Karbohidrat, Gula, Sodium, Serat).
+2. Analisis Kualitas Makanan (Apa yang sudah baik, apa yang berlebih, dan apa yang masih kurang).
+3. Health Insight (Hubungkan dengan fase PMS perempuan, retensi air, keinginan craving manis, atau profil kesehatan pengguna secara suportif).
+4. Rekomendasi Berikutnya (food swap yang ramah hormon, minum air yang cukup, dsb).
 `;
 
-            const contents = [];
-            
-            // Masukkan pesan system instruksi dan konteks di awal
-            contents.push({
-                role: 'user',
-                parts: [{ text: `${systemPrompt}\n\n${userContext}\n\nHalo Coach!` }]
-            });
-            contents.push({
-                role: 'model',
-                parts: [{ text: `Halo! Aku telah memahami profil kesehatan Anda, termasuk kondisi medis: ${userState.conditions.join(', ') || 'Tidak ada'}, fase hormon: ${userState.currentCyclePhase}, serta riwayat gizi 7 hari terakhir Anda. Aku siap memberikan feedback yang akurat dan membimbing Anda dengan pendekatan suportif!` }]
-            });
+                // Panggil API Gemini dengan model gemini-2.5-flash-preview-09-2025 yang baru
+                const resultText = await callGeminiAPI(apiKey, systemPrompt, userText);
+                
+                // Hapus Indikator Mengetik
+                document.getElementById(typingId).remove();
 
-            // Tambahkan sisa riwayat chat dari local storage
-            userState.chatHistory.forEach(msg => {
-                contents.push({
-                    role: msg.role === 'model' ? 'model' : 'user',
-                    parts: [{ text: msg.text }]
-                });
-            });
+                // Parsing respons untuk mendeteksi apakah ada log gizi (JSON) yang dikirimkan oleh AI
+                const jsonRegex = /<json_data>([\s\S]*?)<\/json_data>/;
+                const match = resultText.match(jsonRegex);
+                
+                let cleanedText = resultText.replace(jsonRegex, '').trim();
 
-            // Tambahkan pesan terakhir user jika belum ada
-            if (contents[contents.length - 1].parts[0].text !== userMessage) {
-                contents.push({
-                    role: 'user',
-                    parts: [{ text: userMessage }]
-                });
+                if (match && match[1]) {
+                    try {
+                        const parsedGizi = JSON.parse(match[1].trim());
+                        
+                        // Validasi data
+                        if (parsedGizi.calories || parsedGizi.protein || parsedGizi.carbs) {
+                            const todayData = getTodayData();
+                            todayData.calories += Number(parsedGizi.calories || 0);
+                            todayData.carbs += Number(parsedGizi.carbs || 0);
+                            todayData.protein += Number(parsedGizi.protein || 0);
+                            todayData.fat += Number(parsedGizi.fat || 0);
+                            todayData.sugar += Number(parsedGizi.sugar || 0);
+                            todayData.sodium += Number(parsedGizi.sodium || 0);
+                            todayData.fiber += Number(parsedGizi.fiber || 0);
+                            saveTodayData(todayData);
+                            
+                            showToast("Gizi harian Anda berhasil diperbarui secara otomatis! 📊");
+                        }
+                    } catch (e) {
+                        console.error("Gagal parsing JSON Gizi otomatis:", e);
+                    }
+                }
+
+                // Tampilkan respons AI ke kotak chat
+                appendMessage(cleanedText, 'ai');
+
+            } catch (err) {
+                document.getElementById(typingId).remove();
+                appendMessage(`❌ <b>Terjadi Kendala Koneksi:</b> ${err.message}<br><br>Pastikan API Key Anda aktif di Google AI Studio dan koneksi internet Anda lancar.`, 'ai');
+                showToast("Koneksi API gagal. Periksa API Key Anda.", true);
             }
-
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    contents: contents
-                })
-            });
-
-            if (!response.ok) {
-                const errData = await response.json();
-                throw new Error(errData.error?.message || 'Gagal memanggil API.');
-            }
-
-            const resData = await response.json();
-            return resData.candidates[0].content.parts[0].text;
         }
 
-        // Ekstraksi data JSON dari respons untuk memperbarui dasbor dan history tanggal bersangkutan
-        function extractNutritionData(text) {
-            try {
-                const match = text.match(/```json-nutrition([\s\S]*?)```/);
-                if (match && match[1]) {
-                    const data = JSON.parse(match[1].trim());
-                    const todayStr = getTodayDateString();
-                    
-                    if (!userState.history[todayStr]) {
-                        userState.history[todayStr] = { calories: 0, protein: 0, carbs: 0, fat: 0, water: 0 };
+        // IMPLEMENTASI EXPONENTIAL BACKOFF UNTUK PANGGILAN API GEMINI
+        async function callGeminiAPI(apiKey, systemInstruction, userQuery, base64Image = null, mimeType = null) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            
+            // Siapkan payload konten
+            const parts = [{ text: userQuery }];
+            if (base64Image && mimeType) {
+                parts.unshift({
+                    inlineData: {
+                        mimeType: mimeType,
+                        data: base64Image
+                    }
+                });
+            }
+
+            const payload = {
+                contents: [{ parts: parts }],
+                systemInstruction: {
+                    parts: [{ text: systemInstruction }]
+                }
+            };
+
+            let delay = 1000; // 1 Detik di awal
+            const maxRetries = 5;
+
+            for (let attempt = 1; attempt <= maxRetries; attempt++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        const errData = await response.json();
+                        throw new Error(errData.error?.message || `HTTP error! status: ${response.status}`);
                     }
 
-                    // Akumulasikan ke data harian utama
-                    if (data.calories) userState.dailyStats.calories += parseFloat(data.calories);
-                    if (data.protein) userState.dailyStats.protein += parseFloat(data.protein);
-                    if (data.carbs) userState.dailyStats.carbs += parseFloat(data.carbs);
-                    if (data.fat) userState.dailyStats.fat += parseFloat(data.fat);
-                    if (data.water) userState.dailyStats.water += parseFloat(data.water);
+                    const result = await response.json();
+                    return result.candidates?.[0]?.content?.parts?.[0]?.text || "Maaf, saya tidak bisa memproses permintaan Anda saat ini.";
 
-                    // Sinkronkan ke database riwayat tanggal hari ini
-                    userState.history[todayStr] = { ...userState.dailyStats };
-
-                    updateUI();
-                    saveToLocalStorage();
+                } catch (error) {
+                    if (attempt === maxRetries) {
+                        throw error; // Jika sudah percobaan kelima, lempar error ke user interface
+                    }
+                    // Tunggu delay (Exponential Backoff)
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2; // Naikkan durasi tunggu: 1s -> 2s -> 4s -> 8s -> 16s
                 }
-            } catch (err) {
-                console.warn('Gagal memparsing JSON gizi dari AI response. Ini wajar jika AI tidak menyertakan JSON gizi.', err);
             }
         }
 
-        // Mock Response (Simulasi jika API Key Belum Dipasang)
-        function getMockResponse(userMessage) {
-            const lMessage = userMessage.toLowerCase();
-            let calories = 0, protein = 0, carbs = 0, fat = 0, water = 0;
-            let response = "";
+        // HANDLER INPUT GAMBAR / FOTO MAKANAN
+        async function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
 
-            if (lMessage.includes('evaluasi') || lMessage.includes('seminggu') || lMessage.includes('riwayat')) {
-                response = `### 📊 Analisis Konsistensi Mingguan Anda
-Saya telah meninjau riwayat gizi Anda selama beberapa hari terakhir dari memori aplikasi Anda.
+            showToast("Sedang membaca foto makanan Anda... 📸");
+            
+            const reader = new FileReader();
+            reader.onload = async function() {
+                const base64Data = reader.result.split(',')[1];
+                const mimeType = file.type;
 
-### **Analisis Pola Makan Anda**
-- **Konsistensi Kalori:** Secara keseluruhan, asupan energi Anda sangat baik dan stabil tanpa adanya tanda-tanda pembatasan makan ekstrem (*extreme restriction*). Ini sangat menakjubkan untuk keberlanjutan diet jangka panjang!
-- **Asupan Protein:** Rata-rata protein harian Anda berada di tingkat yang cukup aman, namun masih bisa dioptimalkan agar metabolisme tubuh Anda bekerja lebih efisien.
-- **Kualitas Nutrisi:** Masih ada beberapa hari di mana kadar sodium atau minyak Anda sedikit melonjak (biasanya saat makan menu olahan gorengan).
+                // Tampilkan pratinjau upload di chat
+                appendMessage(`[Mengirimkan Foto Makanan]`, 'user');
+                const typingId = appendTypingIndicator();
 
-### **Rekomendasi Coach**
-1. **Prioritaskan Serat:** Mulai besok, yuk coba sisipkan minimal satu porsi buah segar (seperti buah potong) atau sayur bening di setiap menu makan siang Anda.
-2. **Hidrasi:** Pastikan asupan air minum Anda menyentuh angka 2 Liter untuk membantu ginjal membuang sisa metabolisme dan kelebihan sodium harian.
+                const apiKey = localStorage.getItem('google_gemini_api_key') || '';
+                if (!apiKey) {
+                    document.getElementById(typingId).remove();
+                    showToast("Harap masukkan API Key terlebih dahulu!", true);
+                    return;
+                }
 
-*(Catatan: Ini adalah respon simulasi demo. Masukkan API Key Anda di pojok kanan atas untuk mendapatkan tanggapan kecerdasan buatan Gemini asli yang menganalisis seluruh data riwayat tanggal Anda secara dinamis!)*`;
-            } else if (lMessage.includes('uduk') || lMessage.includes('nasi uduk')) {
-                calories = 450; protein = 12; carbs = 65; fat = 18; water = 0.3;
-                response = `### 🍳 Analisis Menu: Nasi Uduk Komplit
-Pilihan sarapan yang sangat lezat dan membangkitkan energi di pagi hari!
+                // Gunakan prompt instruksi system yang sama
+                const systemPrompt = `
+Kamu adalah AI Nutrition Coach & Smart Diet Companion pribadi yang membantu pengguna menjalani pola makan sehat, nyaman, realistis, dan berkelanjutan tanpa diet ekstrem atau toxic diet culture.
 
-### **Ringkasan Nutrisi Estimasi**
-| Nutrisi | Estimasi |
-| :--- | :--- |
-| **Kalori** | ~450 kcal |
-| **Protein** | ~12 g |
-| **Karbohidrat** | ~65 g |
-| **Lemak** | ~18 g |
-| **Sodium** | ~550 mg |
+Tugas tambahan Anda: Identifikasi makanan dari foto yang diunggah secara akurat, pecah komponennya, dan lakukan analisis nutrisi lengkap.
+Sajikan JSON dan penjelasan terperinci sesuai ketentuan format yang sudah ditentukan.
+`;
 
-### **Analisis Coach**
-Nasi uduk gurih ini memberi dorongan energi cepat. Namun, lauk pendamping gorengan meningkatkan lemak jenuh hari ini.
+                try {
+                    const resultText = await callGeminiAPI(apiKey, systemPrompt, "Tolong analisislah foto makanan ini dengan sangat terperinci.", base64Data, mimeType);
+                    document.getElementById(typingId).remove();
 
-### **Rekomendasi Nyaman Berikutnya**
-- **Sisa Hari Ini:** Karena asupan sodium sarapan ini cukup tinggi, mari seimbangkan makan siang dengan memperbanyak air putih serta memilih masakan kukus/panggang.
+                    // Parsing JSON gizi otomatis jika ada
+                    const jsonRegex = /<json_data>([\s\S]*?)<\/json_data>/;
+                    const match = resultText.match(jsonRegex);
+                    let cleanedText = resultText.replace(jsonRegex, '').trim();
 
-\`\`\`json-nutrition
-{
-  "calories": 450,
-  "protein": 12,
-  "carbs": 65,
-  "fat": 18,
-  "water": 0.3
-}
-\`\`\`
-*(Catatan: Ini adalah respon simulasi demo. Masukkan API Key Anda di pojok kanan atas untuk mendapatkan tanggapan kecerdasan buatan Gemini asli sesuai profil lengkap Anda!)*`;
+                    if (match && match[1]) {
+                        const parsedGizi = JSON.parse(match[1].trim());
+                        const todayData = getTodayData();
+                        todayData.calories += Number(parsedGizi.calories || 0);
+                        todayData.carbs += Number(parsedGizi.carbs || 0);
+                        todayData.protein += Number(parsedGizi.protein || 0);
+                        todayData.fat += Number(parsedGizi.fat || 0);
+                        todayData.sugar += Number(parsedGizi.sugar || 0);
+                        todayData.sodium += Number(parsedGizi.sodium || 0);
+                        todayData.fiber += Number(parsedGizi.fiber || 0);
+                        saveTodayData(todayData);
+                        showToast("Nutrisi berhasil dianalisis dari foto dan ditambahkan ke grafik! 🥳");
+                    }
+
+                    appendMessage(cleanedText, 'ai');
+
+                } catch (err) {
+                    document.getElementById(typingId).remove();
+                    appendMessage(`❌ Gagal menganalisis gambar: ${err.message}`, 'ai');
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // ELEMEN PENDUKUNG DESAIN CHAT
+        function appendMessage(text, sender) {
+            const chatMessages = document.getElementById('chat-messages');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `flex items-start gap-3 ${sender === 'user' ? 'justify-end' : ''}`;
+
+            const formattedText = text.replace(/\n/g, '<br>');
+
+            if (sender === 'user') {
+                msgDiv.innerHTML = `
+                    <div class="bg-emerald-600 text-white rounded-2xl rounded-tr-none p-3.5 text-xs max-w-[85%] leading-relaxed shadow-sm shadow-emerald-100">
+                        ${formattedText}
+                    </div>
+                `;
             } else {
-                calories = 150; protein = 5; carbs = 20; fat = 6; water = 0.2;
-                response = `### 🥑 Analisis Menu Camilan Anda
-Terima kasih sudah mencatat makananmu dengan jujur ke Coach! Konsistensi mencatat adalah langkah luar biasa menuju gaya hidup sehat berkelanjutan.
-
-### **Ringkasan Nutrisi Estimasi**
-*   **Kalori:** ~150 kcal
-*   **Protein:** ~5 g
-*   **Karbohidrat:** ~20 g
-*   **Lemak:** ~6 g
-
-### **Rekomendasi Nyaman Berikutnya**
-- Jika malam ini masih merasa lapar, pilihlah alternatif ringan tinggi serat seperti potongan buah apel segar dengan sedikit yoghurt dingin yang lezat.
-
-\`\`\`json-nutrition
-{
-  "calories": 150,
-  "protein": 5,
-  "carbs": 20,
-  "fat": 6,
-  "water": 0.2
-}
-\`\`\`
-*(Catatan: Ini adalah respon simulasi demo. Masukkan API Key Anda di pojok kanan atas untuk mendapatkan tanggapan kecerdasan buatan Gemini asli sesuai profil lengkap Anda!)*`;
+                msgDiv.innerHTML = `
+                    <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-circle-nodes text-sm"></i>
+                    </div>
+                    <div class="bg-slate-50 rounded-2xl rounded-tl-none p-3.5 text-xs text-slate-700 max-w-[85%] leading-relaxed border border-slate-100/50">
+                        ${formattedText}
+                    </div>
+                `;
             }
-
-            return response;
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
         }
+
+        function appendTypingIndicator() {
+            const chatMessages = document.getElementById('chat-messages');
+            const typingId = `typing-${Date.now()}`;
+            const msgDiv = document.createElement('div');
+            msgDiv.className = "flex items-start gap-3";
+            msgDiv.id = typingId;
+            msgDiv.innerHTML = `
+                <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-circle-nodes text-sm"></i>
+                </div>
+                <div class="bg-slate-50 rounded-2xl rounded-tl-none p-3.5 text-xs text-slate-400 max-w-[85%] border border-slate-100/50 flex items-center gap-1.5">
+                    <span class="animate-bounce">●</span>
+                    <span class="animate-bounce" style="animation-delay: 0.2s">●</span>
+                    <span class="animate-bounce" style="animation-delay: 0.4s">●</span>
+                    <span class="text-[10px] text-slate-400 font-semibold ml-1">NutriCoach sedang menghitung...</span>
+                </div>
+            `;
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return typingId;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function clearChatHistory() {
+            if (confirm("Apakah Anda yakin ingin mengosongkan jendela percakapan ini?")) {
+                const chatMessages = document.getElementById('chat-messages');
+                chatMessages.innerHTML = `
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-circle-nodes text-sm"></i>
+                        </div>
+                        <div class="bg-slate-50 rounded-2xl rounded-tl-none p-3.5 text-xs text-slate-700 max-w-[85%] leading-relaxed border border-slate-100/50">
+                            Halo! Aku asisten NutriCoach pribadimu. 😊 <br><br>
+                            Tuliskan menu makananmu secara santai, atau diskusikan keluhan craving, siklus hormon, dan menu diet sehat tanpa siksaan di sini!
+                        </div>
+                    </div>
+                `;
+                showToast("Layar percakapan dibersihkan!");
+            }
+        }
+
+        // RUN ON INITIAL LOAD
+        window.onload = function() {
+            updateDashboardUI();
+            
+            // Cek jika pengguna belum mengisi API Key, buka otomatis modal setup-nya
+            const hasKey = localStorage.getItem('google_gemini_api_key');
+            if (!hasKey) {
+                setTimeout(() => {
+                    openApiKeyModal();
+                    showToast("Silakan masukkan Google API Key Anda untuk mengaktifkan AI!", false);
+                }, 1000);
+            }
+        };
     </script>
 </body>
 </html>
