@@ -68,7 +68,13 @@
                         <i data-lucide="activity" class="text-emerald-600 w-5 h-5"></i>
                         Status Gizi Hari Ini
                     </h2>
-                    <span class="text-xs text-stone-400 font-medium" id="currentDate">24 Mei 2026</span>
+                    <div class="flex items-center gap-2">
+                        <!-- Button to open Historical Report -->
+                        <button onclick="openHistoryModal()" class="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg transition-all" title="Lihat Riwayat & Laporan">
+                            <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                        </button>
+                        <span class="text-xs text-stone-400 font-medium" id="currentDate">24 Mei 2026</span>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4 mb-6">
@@ -216,24 +222,24 @@
                     <div class="bg-stone-100 rounded-2xl p-4 text-stone-800 text-sm leading-relaxed rounded-tl-none">
                         Halo! Aku adalah <strong>Nutrition Coach & Smart Diet Companion</strong> pribadimu. 💚 
                         <br><br>
-                        Di sini, kita akan fokus membangun pola makan yang sehat, nyaman, realistis, dan berkelanjutan tanpa rasa bersalah atau diet ekstrem.
+                        Sekarang aku sudah dibekali dengan **Memori Mingguan**! Aku bisa mengingat apa saja yang kamu makan dan minum dalam beberapa hari terakhir secara otomatis untuk mengevaluasi konsistensi progres dietmu.
                         <br><br>
-                        Kamu bisa mengetik apa saja yang kamu makan hari ini (misal: <em>"Ayam Geprek + Nasi Uduk"</em> atau <em>"Tadi sore nyemil martabak manis 2 potong"</em>), atau meminta tips diet ramah asam lambung/hormonmu. Yuk, ceritakan makananmu hari ini!
+                        Kamu bisa mengetik makananmu hari ini, atau menanyakan evaluasi jangka panjang seperti: *“Gimana pola makanku seminggu terakhir ini, udah cukup sehat belum?”*
                     </div>
                 </div>
             </div>
 
             <!-- Floating Quick Input Helpers -->
             <div class="px-4 py-2 bg-stone-50 border-t border-stone-100 flex gap-2 overflow-x-auto scrollbar-none text-xs">
-                <span class="text-stone-400 font-bold flex-shrink-0 self-center">Contoh input:</span>
+                <span class="text-stone-400 font-bold flex-shrink-0 self-center">Pertanyaan Cepat:</span>
+                <button onclick="fillAndSend('Evaluasi pola makan dan konsumsi kalori saya selama seminggu terakhir ini secara mendetail.')" class="flex-shrink-0 px-2.5 py-1 bg-white border border-stone-200 rounded-lg text-stone-600 hover:border-emerald-500 hover:text-emerald-600 transition-all font-medium">
+                    📊 Analisis Mingguan Saya
+                </button>
                 <button onclick="fillAndSend('Nasi uduk + Telur dadar + Bakwan jagung')" class="flex-shrink-0 px-2.5 py-1 bg-white border border-stone-200 rounded-lg text-stone-600 hover:border-emerald-500 hover:text-emerald-600 transition-all font-medium">
                     🍳 Sarapan Nasi Uduk
                 </button>
                 <button onclick="fillAndSend('Ayam Geprek sambal bawang level 5 + es teh manis')" class="flex-shrink-0 px-2.5 py-1 bg-white border border-stone-200 rounded-lg text-stone-600 hover:border-emerald-500 hover:text-emerald-600 transition-all font-medium">
                     🔥 Ayam Geprek
-                </button>
-                <button onclick="fillAndSend('Kopi susu gula aren & roti cokelat untuk camilan sore')" class="flex-shrink-0 px-2.5 py-1 bg-white border border-stone-200 rounded-lg text-stone-600 hover:border-emerald-500 hover:text-emerald-600 transition-all font-medium">
-                    ☕ Ngopi Sore
                 </button>
             </div>
 
@@ -387,6 +393,66 @@
         </div>
     </div>
 
+    <!-- Modal 3: Historical Data & Graphs Dashboard -->
+    <div id="historyModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+        <div class="bg-white rounded-3xl max-w-xl w-full p-6 shadow-xl border border-stone-100 relative max-h-[85vh] overflow-y-auto custom-scrollbar">
+            <button onclick="closeModal('historyModal')" class="absolute top-4 right-4 p-1 hover:bg-stone-100 rounded-lg transition-all text-stone-400">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-10 h-10 rounded-xl bg-emerald-600/10 flex items-center justify-center text-emerald-700">
+                    <i data-lucide="calendar" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-stone-900 text-base">Riwayat Gizi & Laporan Bulanan</h3>
+                    <p class="text-xs text-stone-500">Lacak konsistensi gizi harian dan mingguan Anda</p>
+                </div>
+            </div>
+
+            <!-- Weekly Vertical Graph (7 Days) -->
+            <div class="mb-6">
+                <h4 class="text-xs font-bold text-stone-700 mb-3 flex items-center gap-1">
+                    <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-emerald-600"></i> Konsumsi Kalori 7 Hari Terakhir
+                </h4>
+                <div class="bg-stone-50 rounded-2xl p-4 border border-stone-100">
+                    <div class="flex justify-between items-end h-32 gap-2 px-2" id="weeklyChartBars">
+                        <!-- Bars dynamically loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Weekly Averages Info -->
+            <div class="grid grid-cols-3 gap-3 mb-6">
+                <div class="bg-emerald-50/40 p-3 rounded-xl border border-emerald-100/50 text-center">
+                    <p class="text-[10px] text-stone-500 font-semibold">Rata-rata Kalori</p>
+                    <p class="text-sm font-black text-emerald-700 mt-1" id="avgCalories">0 kcal</p>
+                </div>
+                <div class="bg-amber-50/40 p-3 rounded-xl border border-amber-100/50 text-center">
+                    <p class="text-[10px] text-stone-500 font-semibold">Rata-rata Air</p>
+                    <p class="text-sm font-black text-amber-700 mt-1" id="avgWater">0.0 L</p>
+                </div>
+                <div class="bg-blue-50/40 p-3 rounded-xl border border-blue-100/50 text-center">
+                    <p class="text-[10px] text-stone-500 font-semibold">Rata-rata Protein</p>
+                    <p class="text-sm font-black text-blue-700 mt-1" id="avgProtein">0g</p>
+                </div>
+            </div>
+
+            <!-- Log Entries by Date -->
+            <div>
+                <h4 class="text-xs font-bold text-stone-700 mb-2 flex items-center gap-1">
+                    <i data-lucide="list-video" class="w-3.5 h-3.5 text-emerald-600"></i> Catatan Harian Lengkap
+                </h4>
+                <div class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1" id="historyLogList">
+                    <!-- Log entries loaded here -->
+                </div>
+            </div>
+
+            <div class="mt-6 flex gap-2">
+                <button onclick="closeModal('historyModal')" class="flex-1 py-2.5 bg-stone-100 hover:bg-stone-200 rounded-xl text-xs font-bold text-stone-600 transition-all text-center">Tutup Laporan</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="bg-white border-t border-stone-100 py-4 px-6 text-center text-xs text-stone-400">
         <p>© 2026 NutriCoach AI. Dikembangkan secara khusus untuk mendukung kesehatan tanpa diet ekstrem.</p>
@@ -398,7 +464,7 @@
         const systemPrompt = `Kamu adalah AI Nutrition Coach & Smart Diet Companion pribadi yang membantu pengguna menjalani pola makan sehat, nyaman, realistis, dan berkelanjutan tanpa diet ekstrem atau toxic diet culture.
 Tujuan utama:
 - membantu pengguna menurunkan atau menjaga berat badan dengan sehat,
-- membantu memahami pola makan,
+- membantu memahami pola makan harian maupun jangka panjang (mingguan),
 - membantu memilih makanan yang lebih baik,
 - menghitung kalori dan gizi otomatis,
 - memberi rekomendasi makan berdasarkan kondisi kesehatan,
@@ -417,15 +483,16 @@ KEMAMPUAN UTAMA:
 4. Memahami hormonal & siklus menstruasi wanita dan dampaknya bagi berat badan (water retention), energi, serta cravings.
 5. Smart Health Analysis (Kualitas nutrisi, kesesuaian kondisi medis seperti GERD, PCOS, Hipertensi, Asam Urat, dsb).
 6. Rekomendasi Food Swap yang realistis (Contoh: ayam goreng tepung diganti ayam panggang, bumbu terpisah, es teh manis less sugar).
+7. Evaluasi Sejarah Konsumsi Mingguan (Gunakan informasi riwayat gizi 7 hari terakhir yang dilampirkan oleh sistem untuk menganalisis kemajuan dan pola makan pengguna jika mereka bertanya, beri feedback yang membangun).
 
 FORMAT OUTPUT WAJIB:
 Tampilkan respon dengan format Markdown yang rapi, modern, indah, terstruktur dengan subjudul atau ikon menarik:
-1. **Ringkasan Nutrisi Estimasi** (Sajikan dalam bentuk tabel ringkas atau poin berurutan yang memuat Kalori, Protein, Lemak, Karbohidrat, Gula, Sodium, Serat).
+1. **Ringkasan Nutrisi Estimasi** (Sajikan dalam bentuk tabel ringkas atau poin berurutan yang memuat Kalori, Protein, Lemak, Karbohidrat, Gula, Sodium, Serat jika menambahkan catatan makanan baru).
 2. **Analisis Coach** (Apa yang sudah bagus hari ini, apa yang perlu diperhatikan seperti kadar garam atau minyak berlebih).
 3. **Health Insight** (Hubungan dengan siklus menstruasi/hormon saat ini atau kondisi medis pengguna).
 4. **Rekomendasi Nyaman Berikutnya** (Saran konkret untuk sisa hari ini atau besok).
 
-PENTING: Selalu tambahkan format data JSON khusus di akhir respon Anda agar aplikasi web bisa menangkap datanya secara terprogram untuk memperbarui grafik progres secara dinamis! Format JSON harus berada di dalam tag khusus agar mudah diparsing:
+PENTING: Selalu tambahkan format data JSON khusus di akhir respon Anda agar aplikasi web bisa menangkap datanya secara terprogram untuk memperbarui grafik progres secara dinamis jika pengguna mencatat makanan! Format JSON harus berada di dalam tag khusus agar mudah diparsing:
 \`\`\`json-nutrition
 {
   "calories": [angka estimasi kalori],
@@ -437,7 +504,7 @@ PENTING: Selalu tambahkan format data JSON khusus di akhir respon Anda agar apli
 \`\`\`
 Pastikan Anda merespon ramah dengan bahasa Indonesia.`;
 
-        // Database Keadaan Awal
+        // Database Keadaan Awal (Telah Dimodifikasi untuk Menyimpan Riwayat/History)
         let userState = {
             apiKey: '',
             gender: 'Wanita',
@@ -456,6 +523,7 @@ Pastikan Anda merespon ramah dengan bahasa Indonesia.`;
                 fat: 0,
                 water: 0
             },
+            history: {}, // Format: "YYYY-MM-DD": { calories, protein, carbs, fat, water }
             chatHistory: []
         };
 
@@ -467,16 +535,47 @@ Pastikan Anda merespon ramah dengan bahasa Indonesia.`;
             'Luteal (PMS)': 'Fase Luteal (PMS): Berat badan naik sementara akibat retensi air adalah hal normal. Cravings manis meningkat. Coba dark chocolate, pisang, atau yoghurt.'
         };
 
+        // Mengambil string tanggal berformat YYYY-MM-DD local
+        function getTodayDateString() {
+            const date = new Date();
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
         // Inisialisasi Aplikasi saat Load
         window.addEventListener('load', () => {
             loadStateFromLocalStorage();
             lucide.createIcons();
+            
+            // Cek apakah berganti hari, sinkronkan data harian dari history
+            checkDayTransition();
+            
             updateUI();
             
-            // Set tanggal hari ini
+            // Set teks tanggal hari ini di UI
             const options = { year: 'numeric', month: 'long', day: 'numeric' };
             document.getElementById('currentDate').innerText = new Date().toLocaleDateString('id-ID', options);
         });
+
+        // Memeriksa transisi hari
+        function checkDayTransition() {
+            const todayStr = getTodayDateString();
+            if (!userState.history) {
+                userState.history = {};
+            }
+            
+            // Jika hari ini sudah ada catatannya di history, ambil agar sinkron
+            if (userState.history[todayStr]) {
+                userState.dailyStats = { ...userState.history[todayStr] };
+            } else {
+                // Jika hari baru, buat slot kosong di history dan kosongkan progres harian di dasbor
+                userState.dailyStats = { calories: 0, protein: 0, carbs: 0, fat: 0, water: 0 };
+                userState.history[todayStr] = { ...userState.dailyStats };
+                saveToLocalStorage();
+            }
+        }
 
         // Simpan & Ambil Data dari Local Storage
         function saveToLocalStorage() {
@@ -486,7 +585,11 @@ Pastikan Anda merespon ramah dengan bahasa Indonesia.`;
         function loadStateFromLocalStorage() {
             const saved = localStorage.getItem('nutricoach_state');
             if (saved) {
-                userState = JSON.parse(saved);
+                const parsed = JSON.parse(saved);
+                // Pastikan key history ada untuk kompatibilitas data lama
+                if (!parsed.history) parsed.history = {};
+                userState = parsed;
+                
                 // Sinkronkan ke modal input
                 document.getElementById('userGender').value = userState.gender;
                 document.getElementById('userAge').value = userState.age;
@@ -504,10 +607,6 @@ Pastikan Anda merespon ramah dengan bahasa Indonesia.`;
                 // Restore Chat History jika ada
                 if (userState.chatHistory && userState.chatHistory.length > 0) {
                     const container = document.getElementById('chatContainer');
-                    // Simpan welcome message saja terlebih dahulu
-                    const welcomeHTML = container.innerHTML;
-                    container.innerHTML = welcomeHTML;
-                    
                     userState.chatHistory.forEach(msg => {
                         appendMessageToUI(msg.role, msg.text, false);
                     });
@@ -582,6 +681,106 @@ Pastikan Anda merespon ramah dengan bahasa Indonesia.`;
             document.getElementById(id).classList.add('hidden');
         }
 
+        // Membuka modal khusus Riwayat & merender grafis serta daftarnya secara dinamis
+        function openHistoryModal() {
+            renderHistoryData();
+            openModal('historyModal');
+        }
+
+        // Render Grafik Mingguan dan Data Riwayat
+        function renderHistoryData() {
+            const todayStr = getTodayDateString();
+            const last7Days = [];
+            
+            // Hitung 7 hari terakhir ke belakang
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                last7Days.push(dateStr);
+            }
+
+            // 1. Render Grafik Batang Kalori
+            const chartContainer = document.getElementById('weeklyChartBars');
+            chartContainer.innerHTML = '';
+            
+            let totalCalSum = 0;
+            let totalWaterSum = 0;
+            let totalProteinSum = 0;
+            let loggedDaysCount = 0;
+
+            last7Days.forEach(dateStr => {
+                const data = userState.history[dateStr] || { calories: 0, protein: 0, carbs: 0, fat: 0, water: 0 };
+                const cal = data.calories || 0;
+                
+                totalCalSum += cal;
+                totalWaterSum += data.water || 0;
+                totalProteinSum += data.protein || 0;
+                if (cal > 0 || data.water > 0) loggedDaysCount++;
+
+                // Format nama hari (Misal: Sen, Sel, Rab, dsb)
+                const dObj = new Date(dateStr);
+                const dayName = dObj.toLocaleDateString('id-ID', { weekday: 'short' });
+                
+                // Tinggi maksimal 100% dari target 2000 kcal
+                const barHeightPct = Math.min((cal / 2000) * 100, 100);
+
+                const barHTML = `
+                    <div class="flex-1 flex flex-col items-center h-full justify-end">
+                        <span class="text-[9px] font-bold text-stone-500 mb-1">${Math.round(cal)}</span>
+                        <div class="w-full bg-emerald-100 rounded-t-lg transition-all duration-500 overflow-hidden group hover:bg-emerald-200 cursor-pointer" style="height: ${Math.max(barHeightPct, 4)}%">
+                            <div class="w-full bg-emerald-600 h-full"></div>
+                        </div>
+                        <span class="text-[10px] font-semibold text-stone-400 mt-2">${dayName}</span>
+                    </div>
+                `;
+                chartContainer.insertAdjacentHTML('beforeend', barHTML);
+            });
+
+            // 2. Hitung Rata-rata Mingguan
+            const divisor = loggedDaysCount || 1;
+            document.getElementById('avgCalories').innerText = `${Math.round(totalCalSum / divisor)} kcal`;
+            document.getElementById('avgWater').innerText = `${(totalWaterSum / divisor).toFixed(1)} L`;
+            document.getElementById('avgProtein').innerText = `${Math.round(totalProteinSum / divisor)}g`;
+
+            // 3. Render Riwayat List Tanggal Lengkap
+            const listContainer = document.getElementById('historyLogList');
+            listContainer.innerHTML = '';
+
+            // Ambil semua entri tanggal dan urutkan dari terbaru ke terlama
+            const sortedDates = Object.keys(userState.history).sort((a, b) => new Date(b) - new Date(a));
+
+            if (sortedDates.length === 0) {
+                listContainer.innerHTML = `<p class="text-xs text-stone-400 italic text-center py-4">Belum ada riwayat tercatat.</p>`;
+                return;
+            }
+
+            sortedDates.forEach(dateStr => {
+                const data = userState.history[dateStr];
+                if (data.calories === 0 && data.water === 0) return; // Lewati hari kosong
+
+                const formattedDate = new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+                
+                const entryHTML = `
+                    <div class="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-100 text-xs hover:border-emerald-300 transition-all">
+                        <div>
+                            <p class="font-bold text-stone-800">${formattedDate}</p>
+                            <p class="text-[10px] text-stone-400 mt-1">Prot: ${Math.round(data.protein)}g | Karb: ${Math.round(data.carbs)}g | Lemak: ${Math.round(data.fat)}g</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-extrabold text-emerald-700">${Math.round(data.calories)} kcal</p>
+                            <p class="text-[10px] text-amber-600 font-medium">💧 ${data.water.toFixed(1)} L</p>
+                        </div>
+                    </div>
+                `;
+                listContainer.insertAdjacentHTML('beforeend', entryHTML);
+            });
+            
+            if (listContainer.children.length === 0) {
+                listContainer.innerHTML = `<p class="text-xs text-stone-400 italic text-center py-4">Belum ada riwayat konsumsi aktif.</p>`;
+            }
+        }
+
         // Menyimpan Pengaturan Profil
         function saveUserProfile() {
             userState.gender = document.getElementById('userGender').value;
@@ -634,11 +833,16 @@ Pastikan Anda merespon ramah dengan bahasa Indonesia.`;
             document.getElementById('chatForm').dispatchEvent(new Event('submit'));
         }
 
-        // Bersihkan Riwayat Chat
+        // Bersihkan Riwayat Chat & Reset Hari Ini
         function clearChatHistory() {
             if (confirm('Apakah Anda yakin ingin menghapus seluruh riwayat obrolan dan mereset grafik gizi hari ini?')) {
                 userState.chatHistory = [];
                 userState.dailyStats = { calories: 0, protein: 0, carbs: 0, fat: 0, water: 0 };
+                
+                // Hapus juga slot hari ini dari database riwayat
+                const todayStr = getTodayDateString();
+                userState.history[todayStr] = { ...userState.dailyStats };
+                
                 saveToLocalStorage();
                 
                 // Clear UI
@@ -774,34 +978,50 @@ Pastikan Anda merespon ramah dengan bahasa Indonesia.`;
             }
         }
 
-        // Memanggil API Google Gemini
+        // Memanggil API Google Gemini (Dengan Menyisipkan Memori 7 Hari Terakhir)
         async function callGeminiAPI(userMessage) {
-            // Gabungkan system prompt, profil saat ini, dan seluruh riwayat chat
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${userState.apiKey}`;
             
-            // Format konteks profil pengguna saat ini agar dipahami AI
+            // 1. Ekstrak data riwayat gizi 7 hari terakhir dari memori HP
+            const last7Days = [];
+            let historySummary = "";
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                last7Days.push(dateStr);
+            }
+            last7Days.forEach(dateStr => {
+                const data = userState.history[dateStr] || { calories: 0, protein: 0, carbs: 0, fat: 0, water: 0 };
+                historySummary += `- Tanggal ${dateStr}: Kalori: ${Math.round(data.calories)} kcal, Prot: ${Math.round(data.protein)}g, Karb: ${Math.round(data.carbs)}g, Lemak: ${Math.round(data.fat)}g, Air: ${data.water.toFixed(1)}L\n`;
+            });
+
+            // 2. Format konteks profil pengguna dan riwayat terbaru
             const userContext = `
 INFORMASI PENGGUNA SAAT INI:
 - Jenis Kelamin: ${userState.gender}
-- Siklus Hormon Saat Ini: Fase ${userState.currentCyclePhase} (Penting untuk diet wanita & mood)
+- Siklus Hormon Saat Ini: Fase ${userState.currentCyclePhase}
 - Kondisi Medis: ${userState.conditions.length > 0 ? userState.conditions.join(', ') : 'Tidak ada keluhan medis'}
 - Usia: ${userState.age} tahun, Berat: ${userState.weight} kg, Tinggi: ${userState.height} cm
 - Target Berat Badan: ${userState.targetWeight} kg
 - Pola Makan: ${userState.diet}
 - Aktivitas Harian: ${userState.activity}
+
+RIWAYAT GIZI 7 HARI TERAKHIR (Daftar otomatis dari database aplikasi):
+${historySummary}
+*(Gunakan data di atas jika pengguna menanyakan evaluasi pola makan mingguan, konsistensi kalori, atau efek makanan beberapa hari terakhir mereka).*
 `;
 
-            // Konversi riwayat obrolan ke format payload API Gemini
             const contents = [];
             
-            // Masukkan pesan system instruksi dan konteks user di awal sebagai panduan sistem
+            // Masukkan pesan system instruksi dan konteks di awal
             contents.push({
                 role: 'user',
                 parts: [{ text: `${systemPrompt}\n\n${userContext}\n\nHalo Coach!` }]
             });
             contents.push({
                 role: 'model',
-                parts: [{ text: `Halo! Aku telah memahami profil kesehatan Anda, termasuk kondisi medis: ${userState.conditions.join(', ') || 'Tidak ada'} dan fase siklus hormon Anda: ${userState.currentCyclePhase}. Aku siap membimbing Anda dengan pendekatan suportif tanpa toxic diet culture!` }]
+                parts: [{ text: `Halo! Aku telah memahami profil kesehatan Anda, termasuk kondisi medis: ${userState.conditions.join(', ') || 'Tidak ada'}, fase hormon: ${userState.currentCyclePhase}, serta riwayat gizi 7 hari terakhir Anda. Aku siap memberikan feedback yang akurat dan membimbing Anda dengan pendekatan suportif!` }]
             });
 
             // Tambahkan sisa riwayat chat dari local storage
@@ -839,21 +1059,30 @@ INFORMASI PENGGUNA SAAT INI:
             return resData.candidates[0].content.parts[0].text;
         }
 
-        // Ekstraksi data JSON dari respons untuk memperbarui dasbor
+        // Ekstraksi data JSON dari respons untuk memperbarui dasbor dan history tanggal bersangkutan
         function extractNutritionData(text) {
             try {
                 const match = text.match(/```json-nutrition([\s\S]*?)```/);
                 if (match && match[1]) {
                     const data = JSON.parse(match[1].trim());
+                    const todayStr = getTodayDateString();
                     
-                    // Akumulasikan ke data harian
+                    if (!userState.history[todayStr]) {
+                        userState.history[todayStr] = { calories: 0, protein: 0, carbs: 0, fat: 0, water: 0 };
+                    }
+
+                    // Akumulasikan ke data harian utama
                     if (data.calories) userState.dailyStats.calories += parseFloat(data.calories);
                     if (data.protein) userState.dailyStats.protein += parseFloat(data.protein);
                     if (data.carbs) userState.dailyStats.carbs += parseFloat(data.carbs);
                     if (data.fat) userState.dailyStats.fat += parseFloat(data.fat);
                     if (data.water) userState.dailyStats.water += parseFloat(data.water);
 
+                    // Sinkronkan ke database riwayat tanggal hari ini
+                    userState.history[todayStr] = { ...userState.dailyStats };
+
                     updateUI();
+                    saveToLocalStorage();
                 }
             } catch (err) {
                 console.warn('Gagal memparsing JSON gizi dari AI response. Ini wajar jika AI tidak menyertakan JSON gizi.', err);
@@ -862,13 +1091,25 @@ INFORMASI PENGGUNA SAAT INI:
 
         // Mock Response (Simulasi jika API Key Belum Dipasang)
         function getMockResponse(userMessage) {
-            // Simulasi respon berbasis kata kunci sederhana agar terasa interaktif saat dicoba pertama kali
             const lMessage = userMessage.toLowerCase();
             let calories = 0, protein = 0, carbs = 0, fat = 0, water = 0;
-
             let response = "";
 
-            if (lMessage.includes('uduk') || lMessage.includes('nasi uduk')) {
+            if (lMessage.includes('evaluasi') || lMessage.includes('seminggu') || lMessage.includes('riwayat')) {
+                response = `### 📊 Analisis Konsistensi Mingguan Anda
+Saya telah meninjau riwayat gizi Anda selama beberapa hari terakhir dari memori aplikasi Anda.
+
+### **Analisis Pola Makan Anda**
+- **Konsistensi Kalori:** Secara keseluruhan, asupan energi Anda sangat baik dan stabil tanpa adanya tanda-tanda pembatasan makan ekstrem (*extreme restriction*). Ini sangat menakjubkan untuk keberlanjutan diet jangka panjang!
+- **Asupan Protein:** Rata-rata protein harian Anda berada di tingkat yang cukup aman, namun masih bisa dioptimalkan agar metabolisme tubuh Anda bekerja lebih efisien.
+- **Kualitas Nutrisi:** Masih ada beberapa hari di mana kadar sodium atau minyak Anda sedikit melonjak (biasanya saat makan menu olahan gorengan).
+
+### **Rekomendasi Coach**
+1. **Prioritaskan Serat:** Mulai besok, yuk coba sisipkan minimal satu porsi buah segar (seperti buah potong) atau sayur bening di setiap menu makan siang Anda.
+2. **Hidrasi:** Pastikan asupan air minum Anda menyentuh angka 2 Liter untuk membantu ginjal membuang sisa metabolisme dan kelebihan sodium harian.
+
+*(Catatan: Ini adalah respon simulasi demo. Masukkan API Key Anda di pojok kanan atas untuk mendapatkan tanggapan kecerdasan buatan Gemini asli yang menganalisis seluruh data riwayat tanggal Anda secara dinamis!)*`;
+            } else if (lMessage.includes('uduk') || lMessage.includes('nasi uduk')) {
                 calories = 450; protein = 12; carbs = 65; fat = 18; water = 0.3;
                 response = `### 🍳 Analisis Menu: Nasi Uduk Komplit
 Pilihan sarapan yang sangat lezat dan membangkitkan energi di pagi hari!
@@ -880,18 +1121,13 @@ Pilihan sarapan yang sangat lezat dan membangkitkan energi di pagi hari!
 | **Protein** | ~12 g |
 | **Karbohidrat** | ~65 g |
 | **Lemak** | ~18 g |
-| **Gula** | ~2 g |
-| **Sodium** | ~550 mg (cukup tinggi) |
+| **Sodium** | ~550 mg |
 
 ### **Analisis Coach**
-Nasi uduk yang dimasak dengan santan memiliki rasa gurih yang memuaskan. Karbohidratnya cukup tinggi sehingga memberi dorongan energi cepat. Namun, lauk pendamping seperti bakwan goreng atau telur dadar goreng meningkatkan lemak jenuh dan sodium hari ini.
-
-### **Health Insight**
-Karena fase siklusmu saat ini adalah **${userState.currentCyclePhase}**, tubuh cenderung menahan air. Kandungan sodium dari nasi uduk ini bisa membuat perut terasa sedikit kembung hari ini. Jangan khawatir, ini sangat normal!
+Nasi uduk gurih ini memberi dorongan energi cepat. Namun, lauk pendamping gorengan meningkatkan lemak jenuh hari ini.
 
 ### **Rekomendasi Nyaman Berikutnya**
-- **Food Swap Ringan:** Untuk makan siang nanti, yuk pilih menu yang lebih ringan berserat dan tinggi protein kukus/panggang, misalnya nasi merah dengan pepes ayam dan sayur bening bayam.
-- **Hidrasi:** Pastikan minum air putih minimal 1 gelas ekstra siang ini untuk membantu membuang kelebihan sodium.
+- **Sisa Hari Ini:** Karena asupan sodium sarapan ini cukup tinggi, mari seimbangkan makan siang dengan memperbanyak air putih serta memilih masakan kukus/panggang.
 
 \`\`\`json-nutrition
 {
@@ -903,61 +1139,19 @@ Karena fase siklusmu saat ini adalah **${userState.currentCyclePhase}**, tubuh c
 }
 \`\`\`
 *(Catatan: Ini adalah respon simulasi demo. Masukkan API Key Anda di pojok kanan atas untuk mendapatkan tanggapan kecerdasan buatan Gemini asli sesuai profil lengkap Anda!)*`;
-            } else if (lMessage.includes('geprek')) {
-                calories = 620; protein = 28; carbs = 58; fat = 32; water = 0.4;
-                response = `### 🔥 Analisis Menu: Ayam Geprek Sambal Bawang
-Pilihan yang sangat memuaskan bagi pencinta makanan pedas! Proteinnya sangat tinggi.
-
-### **Ringkasan Nutrisi Estimasi**
-| Nutrisi | Estimasi |
-| :--- | :--- |
-| **Kalori** | ~620 kcal |
-| **Protein** | ~28 g |
-| **Karbohidrat** | ~58 g |
-| **Lemak** | ~32 g (tinggi) |
-| **Sodium** | ~850 mg |
-
-### **Analisis Coach**
-Kelebihan utama menu ini adalah kandungan proteinnya yang mantap (~28g) dari ayam. Namun, proses penggorengan tepung (*deep fried*) dan siraman minyak panas pada sambal membuat kalori serta lemak jenuhnya melonjak signifikan.
-
-### **Health Insight**
-${userState.conditions.includes('GERD') ? '⚠️ **Perhatian Asam Lambung (GERD):** Kombinasi minyak gorengan dan cabai level tinggi berpotensi memicu naiknya asam lambung atau rasa terbakar di dada. Coba batasi tingkat kepedasannya ya.' : 'Bagi pencinta pedas, menu ini sangat meningkatkan mood. Jaga agar tidak terlalu sering dikonsumsi berturut-turut.'}
-
-### **Rekomendasi Nyaman Berikutnya**
-- **Food Swap:** Lain kali, kamu bisa memesan "Ayam Geprek tanpa tepung (ayam bakar/ungkep yang digeprek)" untuk memangkas hingga 200 kalori lemak jenuh dengan rasa yang tetap lezat!
-- **Sisa Hari Ini:** Seimbangkan makan malam dengan porsi yang lebih ramah sayur dan buah tanpa minyak.
-
-\`\`\`json-nutrition
-{
-  "calories": 620,
-  "protein": 28,
-  "carbs": 58,
-  "fat": 32,
-  "water": 0.4
-}
-\`\`\`
-*(Catatan: Ini adalah respon simulasi demo. Masukkan API Key Anda di pojok kanan atas untuk mendapatkan tanggapan kecerdasan buatan Gemini asli sesuai profil lengkap Anda!)*`;
             } else {
-                // Default fallback response
                 calories = 150; protein = 5; carbs = 20; fat = 6; water = 0.2;
                 response = `### 🥑 Analisis Menu Camilan Anda
-Terima kasih sudah mencatat makananmu dengan jujur ke Coach! Konsistensi mencatat adalah langkah luar biasa menuju gaya hidup berkelanjutan.
+Terima kasih sudah mencatat makananmu dengan jujur ke Coach! Konsistensi mencatat adalah langkah luar biasa menuju gaya hidup sehat berkelanjutan.
 
 ### **Ringkasan Nutrisi Estimasi**
 *   **Kalori:** ~150 kcal
 *   **Protein:** ~5 g
 *   **Karbohidrat:** ~20 g
 *   **Lemak:** ~6 g
-*   **Serat:** ~1.5 g
-
-### **Analisis Coach**
-Porsinya sudah berada dalam batas aman untuk camilan pengganjal lapar. Kita tidak perlu terlalu ketat memangkas makanan, yang terpenting adalah kontrol porsi dan keseimbangan jenis makanan sepanjang hari.
-
-### **Health Insight**
-Menjaga energi tetap stabil sepanjang hari sangat penting, terutama pada fase **${userState.currentCyclePhase}** saat metabolisme tubuh Anda bekerja lebih aktif atau butuh ketenangan ekstra.
 
 ### **Rekomendasi Nyaman Berikutnya**
-- Jika malam ini masih merasa lapar, pilihlah alternatif ringan tinggi serat seperti potongan buah apel dengan sedikit selai kacang, atau semangkuk yoghurt plain dingin yang lezat.
+- Jika malam ini masih merasa lapar, pilihlah alternatif ringan tinggi serat seperti potongan buah apel segar dengan sedikit yoghurt dingin yang lezat.
 
 \`\`\`json-nutrition
 {
