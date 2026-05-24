@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NutriCoach AI - Smart Diet Companion</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-[#FAF9F6] text-stone-800 min-h-screen flex flex-col">
+
+    <!-- Header / Navbar -->
+    <header class="bg-white/80 backdrop-blur-md border-b border-stone-200 sticky top-0 z-50 px-4 py-3 sm:px-8 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-200">
+                <i data-lucide="leaf" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg leading-none text-stone-900">NutriCoach <span class="text-emerald-600">AI</span></h1>
+                <p class="text-[10px] text-stone-500 font-medium">Smart Diet & Wellness Companion</p>
+            </div>
+        </div>
+
+        <!-- API Key Status Indicator -->
+        <div class="flex items-center gap-2">
+            <button onclick="openModal('apiModal')" id="apiBadge" class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 transition-all hover:bg-amber-100">
+                <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                Setup API Key
+            </button>
+            <button onclick="openModal('profileModal')" class="w-9 h-9 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm border border-emerald-200 hover:bg-emerald-200 transition-all">
+                <i data-lucide="user" class="w-5 h-5"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace Grid -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left Side: Dashboard & Profile Summary (5 Cols) -->
+        <section class="lg:col-span-5 flex flex-col gap-6">
+            
+            <!-- Quick Stats Card -->
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-stone-100">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="font-bold text-stone-900 flex items-center gap-2">
+                        <i data-lucide="activity" class="text-emerald-600 w-5 h-5"></i>
+                        Status Gizi Hari Ini
+                    </h2>
+                    <span class="text-xs text-stone-400 font-medium" id="currentDate">24 Mei 2026</span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-emerald-50/50 rounded-2xl p-4 border border-emerald-100/50">
+                        <p class="text-xs text-stone-500 font-semibold mb-1">Target Kalori</p>
+                        <div class="flex items-baseline gap-1">
+                            <span class="text-2xl font-black text-emerald-700" id="caloriesValue">0</span>
+                            <span class="text-xs text-emerald-600 font-medium">/ 2,000 kcal</span>
+                        </div>
+                        <div class="w-full bg-stone-200/60 h-2 rounded-full mt-3 overflow-hidden">
+                            <div class="bg-emerald-600 h-full rounded-full transition-all duration-500" id="caloriesBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="bg-amber-50/50 rounded-2xl p-4 border border-amber-100/50">
+                        <p class="text-xs text-stone-500 font-semibold mb-1">Cairan Tubuh</p>
+                        <div class="flex items-baseline gap-1">
+                            <span class="text-2xl font-black text-amber-700" id="waterValue">0</span>
+                            <span class="text-xs text-amber-600 font-medium">/ 2.5 L</span>
+                        </div>
+                        <div class="w-full bg-stone-200/60 h-2 rounded-full mt-3 overflow-hidden">
+                            <div class="bg-amber-500 h-full rounded-full transition-all duration-500" id="waterBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Macro Progress Bars -->
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-xs font-semibold mb-1">
+                            <span class="text-stone-600">Protein (g)</span>
+                            <span class="text-stone-900" id="proteinText">0 / 120g</span>
+                        </div>
+                        <div class="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-blue-500 h-full rounded-full transition-all" id="proteinBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs font-semibold mb-1">
+                            <span class="text-stone-600">Karbohidrat (g)</span>
+                            <span class="text-stone-900" id="carbsText">0 / 250g</span>
+                        </div>
+                        <div class="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-amber-500 h-full rounded-full transition-all" id="carbsBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs font-semibold mb-1">
+                            <span class="text-stone-600">Lemak (g)</span>
+                            <span class="text-stone-900" id="fatText">0 / 65g</span>
+                        </div>
+                        <div class="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-rose-400 h-full rounded-full transition-all" id="fatBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cycle & Hormone Assist Widget -->
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-stone-100">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="font-bold text-stone-900 flex items-center gap-2">
+                        <i data-lucide="sparkles" class="text-rose-500 w-5 h-5"></i>
+                        Hormonal & Cycle Syncing
+                    </h2>
+                    <span class="text-xs bg-rose-50 text-rose-600 px-2 py-1 rounded-md font-bold" id="cycleStatusBadge">Menstruasi</span>
+                </div>
+                <p class="text-xs text-stone-500 leading-relaxed mb-4">
+                    Sesuaikan porsi, ketahui penyebab lapar mendadak, serta cari alternatif nutrisi sehat berdasarkan fase siklus hormonal Anda.
+                </p>
+                <div class="grid grid-cols-4 gap-2 text-center">
+                    <button onclick="setCyclePhase('Menstruasi')" id="phaseBtn-Menstruasi" class="phase-btn p-2 rounded-xl text-[10px] font-bold border transition-all bg-rose-50 border-rose-200 text-rose-700">
+                        <div class="mb-1 text-base">🩸</div>Menstruasi
+                    </button>
+                    <button onclick="setCyclePhase('Folikuler')" id="phaseBtn-Folikuler" class="phase-btn p-2 rounded-xl text-[10px] font-bold border transition-all bg-stone-50 border-stone-200 text-stone-600">
+                        <div class="mb-1 text-base">🌱</div>Folikuler
+                    </button>
+                    <button onclick="setCyclePhase('Ovulasi')" id="phaseBtn-Ovulasi" class="phase-btn p-2 rounded-xl text-[10px] font-bold border transition-all bg-stone-50 border-stone-200 text-stone-600">
+                        <div class="mb-1 text-base">✨</div>Ovulasi
+                    </button>
+                    <button onclick="setCyclePhase('Luteal (PMS)')" id="phaseBtn-Luteal" class="phase-btn p-2 rounded-xl text-[10px] font-bold border transition-all bg-stone-50 border-stone-200 text-stone-600">
+                        <div class="mb-1 text-base">🍪</div>PMS
+                    </button>
+                </div>
+                <div class="mt-4 p-3 bg-rose-50/40 rounded-xl border border-rose-100/60 text-xs text-rose-800" id="cycleAdviseText">
+                    <strong>Fase Menstruasi:</strong> Tubuh rentan lelah dan butuh asupan zat besi tinggi. Perbanyak protein hangat dan sayuran hijau.
+                </div>
+            </div>
+
+            <!-- Profile Overview Quick Card -->
+            <div class="bg-stone-900 text-stone-100 rounded-3xl p-6 shadow-sm flex flex-col justify-between relative overflow-hidden">
+                <div class="absolute -right-8 -bottom-8 w-32 h-32 bg-emerald-600/20 rounded-full blur-2xl"></div>
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <span class="text-[10px] font-bold tracking-wider text-emerald-400 uppercase">Target Utama</span>
+                            <h3 class="text-lg font-bold text-white mt-1" id="profileGoalText">Menurunkan Berat Badan</h3>
+                        </div>
+                        <button onclick="openModal('profileModal')" class="p-1.5 hover:bg-white/10 rounded-lg transition-all text-stone-300">
+                            <i data-lucide="edit-3" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-y-3 gap-x-2 text-xs text-stone-300">
+                        <div><strong class="text-white">Berat Saat Ini:</strong> <span id="pWeight">65</span> kg</div>
+                        <div><strong class="text-white">Target Berat:</strong> <span id="pTargetWeight">58</span> kg</div>
+                        <div class="col-span-2"><strong class="text-white">Kondisi Medis:</strong> <span id="pConditions" class="text-amber-300">Tidak ada</span></div>
+                    </div>
+                </div>
+                <div class="border-t border-stone-800 mt-4 pt-4 flex gap-4 text-xs text-stone-400">
+                    <span class="flex items-center gap-1"><i data-lucide="activity" class="w-3.5 h-3.5 text-emerald-400"></i> <span id="pActivity">Sedang</span></span>
+                    <span class="flex items-center gap-1"><i data-lucide="chef-hat" class="w-3.5 h-3.5 text-emerald-400"></i> <span id="pDiet">Semua Makanan</span></span>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Right Side: AI Nutritionist Chatbox (7 Cols) -->
+        <section class="lg:col-span-7 flex flex-col bg-white rounded-3xl border border-stone-100 shadow-sm h-[680px] overflow-hidden">
+            
+            <!-- Chat Header -->
+            <div class="p-4 border-b border-stone-100 flex items-center justify-between bg-stone-50/50">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-emerald-600/15 flex items-center justify-center text-emerald-700 font-bold">
+                        🥗
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-stone-900 text-sm">Coach Nutrisi AI</h3>
+                        <p class="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            Online & Siap Membantu
+                        </p>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="clearChatHistory()" class="p-2 hover:bg-stone-100 rounded-lg text-stone-400 hover:text-stone-600 transition-all" title="Bersihkan Obrolan">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chat Message Area -->
+            <div id="chatContainer" class="flex-1 p-4 overflow-y-auto custom-scrollbar space-y-4">
+                <!-- Welcome Message -->
+                <div class="flex gap-3 max-w-[85%]">
+                    <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-sm flex-shrink-0">🥑</div>
+                    <div class="bg-stone-100 rounded-2xl p-4 text-stone-800 text-sm leading-relaxed rounded-tl-none">
+                        Halo! Aku adalah <strong>Nutrition Coach & Smart Diet Companion</strong> pribadimu. 💚 
+                        <br><br>
+                        Di sini, kita akan fokus membangun pola makan yang sehat, nyaman, realistis, dan berkelanjutan tanpa rasa bersalah atau diet ekstrem.
+                        <br><br>
+                        Kamu bisa mengetik apa saja yang kamu makan hari ini (misal: <em>"Ayam Geprek + Nasi Uduk"</em> atau <em>"Tadi sore nyemil martabak manis 2 potong"</em>), atau meminta tips diet ramah asam lambung/hormonmu. Yuk, ceritakan makananmu hari ini!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Floating Quick Input Helpers -->
+            <div class="px-4 py-2 bg-stone-50 border-t border-stone-100 flex gap-2 overflow-x-auto scrollbar-none text-xs">
+                <span class="text-stone-400 font-bold flex-shrink-0 self-center">Contoh input:</span>
+                <button onclick="fillAndSend('Nasi uduk + Telur dadar + Bakwan jagung')" class="flex-shrink-0 px-2.5 py-1 bg-white border border-stone-200 rounded-lg text-stone-600 hover:border-emerald-500 hover:text-emerald-600 transition-all font-medium">
+                    🍳 Sarapan Nasi Uduk
+                </button>
+                <button onclick="fillAndSend('Ayam Geprek sambal bawang level 5 + es teh manis')" class="flex-shrink-0 px-2.5 py-1 bg-white border border-stone-200 rounded-lg text-stone-600 hover:border-emerald-500 hover:text-emerald-600 transition-all font-medium">
+                    🔥 Ayam Geprek
+                </button>
+                <button onclick="fillAndSend('Kopi susu gula aren & roti cokelat untuk camilan sore')" class="flex-shrink-0 px-2.5 py-1 bg-white border border-stone-200 rounded-lg text-stone-600 hover:border-emerald-500 hover:text-emerald-600 transition-all font-medium">
+                    ☕ Ngopi Sore
+                </button>
+            </div>
+
+            <!-- Chat Input Controls -->
+            <div class="p-4 border-t border-stone-100 bg-white">
+                <form id="chatForm" onsubmit="handleSendMessage(event)" class="flex gap-2">
+                    <input type="text" id="userInput" placeholder="Tulis menu makanan Anda atau ajukan pertanyaan gizi..." class="flex-1 px-4 py-3 rounded-2xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" required>
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 rounded-2xl transition-all font-semibold flex items-center justify-center gap-1 shadow-sm">
+                        <span>Kirim</span>
+                        <i data-lucide="send" class="w-4 h-4"></i>
+                    </button>
+                </form>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Modal 1: Google AI Studio API Key Setup -->
+    <div id="apiModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl border border-stone-100 relative animate-fade-in">
+            <button onclick="closeModal('apiModal')" class="absolute top-4 right-4 p-1 hover:bg-stone-100 rounded-lg transition-all text-stone-400">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600">
+                    <i data-lucide="key" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-stone-900 text-base">Setup Google AI Studio Key</h3>
+                    <p class="text-xs text-stone-500">Hubungkan dengan mesin kecerdasan AI Pro Anda</p>
+                </div>
+            </div>
+            
+            <p class="text-xs text-stone-600 leading-relaxed mb-4">
+                Untuk menggunakan AI ini secara penuh dengan <strong>system prompt khusus diet sehat Anda</strong>, Anda perlu mendapatkan API Key gratis dari Google AI Studio.
+            </p>
+
+            <div class="bg-amber-50/50 rounded-2xl p-4 border border-amber-100/50 mb-4 text-xs space-y-2 text-amber-900">
+                <div class="font-bold flex items-center gap-1"><i data-lucide="help-circle" class="w-3.5 h-3.5"></i> Cara mendapatkan API Key:</div>
+                <ol class="list-decimal pl-4 space-y-1 text-stone-600">
+                    <li>Buka <a href="https://aistudio.google.com" target="_blank" class="text-emerald-600 underline font-semibold">Google AI Studio</a>.</li>
+                    <li>Login dengan akun Google berbayar (AI Pro) atau gratis Anda.</li>
+                    <li>Klik tombol <strong>"Get API Key"</strong> di sebelah kiri atas.</li>
+                    <li>Buat kunci baru (*Create API Key*) lalu salin kodenya ke sini.</li>
+                </ol>
+            </div>
+
+            <div class="space-y-3">
+                <label class="block text-xs font-bold text-stone-700">Google Gemini API Key</label>
+                <input type="password" id="apiKeyInput" placeholder="AIzaSy..." class="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                <p class="text-[10px] text-stone-400">API Key disimpan dengan aman secara lokal di peramban (browser) Anda.</p>
+            </div>
+
+            <div class="flex gap-2 mt-6">
+                <button onclick="closeModal('apiModal')" class="flex-1 py-2.5 bg-stone-100 hover:bg-stone-200 rounded-xl text-xs font-bold text-stone-600 transition-all">Batal</button>
+                <button onclick="saveApiKey()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 rounded-xl text-xs font-bold text-white transition-all shadow-md shadow-emerald-200">Simpan API Key</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2: Edit Profile & Medical Conditions -->
+    <div id="profileModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-xl border border-stone-100 relative max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <button onclick="closeModal('profileModal')" class="absolute top-4 right-4 p-1 hover:bg-stone-100 rounded-lg transition-all text-stone-400">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-xl bg-emerald-600/10 flex items-center justify-center text-emerald-700">
+                    <i data-lucide="sliders" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-stone-900 text-base">Profil & Target Kesehatan</h3>
+                    <p class="text-xs text-stone-500">AI akan menyesuaikan semua rekomendasi gizi Anda</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 mb-1">Gender</label>
+                    <select id="userGender" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:ring-2 focus:ring-emerald-500">
+                        <option value="Wanita">Wanita</option>
+                        <option value="Pria">Pria</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 mb-1">Usia (Tahun)</label>
+                    <input type="number" id="userAge" value="26" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 mb-1">Berat Saat Ini (kg)</label>
+                    <input type="number" id="userWeight" value="65" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 mb-1">Target Berat (kg)</label>
+                    <input type="number" id="userTargetWeight" value="58" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 mb-1">Tinggi Badan (cm)</label>
+                    <input type="number" id="userHeight" value="160" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 mb-1">Aktivitas Harian</label>
+                    <select id="userActivity" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:ring-2 focus:ring-emerald-500">
+                        <option value="Sangat Ringan">Sangat Ringan (Banyak Duduk)</option>
+                        <option value="Sedang" selected>Sedang (Aktif Ringan)</option>
+                        <option value="Sangat Aktif">Sangat Aktif (Olahraga Teratur)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-xs font-bold text-stone-700 mb-2">Kondisi Kesehatan / Keluhan Medis (Bisa pilih lebih dari satu)</label>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <label class="flex items-center gap-2 p-2 rounded-lg border border-stone-100 hover:bg-stone-50 cursor-pointer">
+                        <input type="checkbox" name="condition" value="GERD" class="rounded text-emerald-600 focus:ring-emerald-500"> GERD / Asam Lambung
+                    </label>
+                    <label class="flex items-center gap-2 p-2 rounded-lg border border-stone-100 hover:bg-stone-50 cursor-pointer">
+                        <input type="checkbox" name="condition" value="PCOS" class="rounded text-emerald-600 focus:ring-emerald-500"> PCOS / Hormon
+                    </label>
+                    <label class="flex items-center gap-2 p-2 rounded-lg border border-stone-100 hover:bg-stone-50 cursor-pointer">
+                        <input type="checkbox" name="condition" value="Hipertensi" class="rounded text-emerald-600 focus:ring-emerald-500"> Hipertensi (Darah Tinggi)
+                    </label>
+                    <label class="flex items-center gap-2 p-2 rounded-lg border border-stone-100 hover:bg-stone-50 cursor-pointer">
+                        <input type="checkbox" name="condition" value="Asam Urat" class="rounded text-emerald-600 focus:ring-emerald-500"> Asam Urat
+                    </label>
+                    <label class="flex items-center gap-2 p-2 rounded-lg border border-stone-100 hover:bg-stone-50 cursor-pointer">
+                        <input type="checkbox" name="condition" value="Kolesterol" class="rounded text-emerald-600 focus:ring-emerald-500"> Kolesterol Tinggi
+                    </label>
+                    <label class="flex items-center gap-2 p-2 rounded-lg border border-stone-100 hover:bg-stone-50 cursor-pointer">
+                        <input type="checkbox" name="condition" value="Diabetes" class="rounded text-emerald-600 focus:ring-emerald-500"> Diabetes / Resistensi Insulin
+                    </label>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-xs font-bold text-stone-700 mb-1">Preferensi Pola Makan</label>
+                <select id="userDiet" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:ring-2 focus:ring-emerald-500">
+                    <option value="Semua Makanan" selected>Semua Makanan (Bebas)</option>
+                    <option value="Vegetarian">Vegetarian</option>
+                    <option value="Halal Only">Halal</option>
+                    <option value="Bebas Gluten">Bebas Gluten / Celiac</option>
+                    <option value="Rendah Karbohidrat">Rendah Karbohidrat</option>
+                </select>
+            </div>
+
+            <div class="flex gap-2 mt-6">
+                <button onclick="closeModal('profileModal')" class="flex-1 py-2.5 bg-stone-100 hover:bg-stone-200 rounded-xl text-xs font-bold text-stone-600 transition-all">Batal</button>
+                <button onclick="saveUserProfile()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 rounded-xl text-xs font-bold text-white transition-all shadow-md shadow-emerald-200">Perbarui Profil</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-stone-100 py-4 px-6 text-center text-xs text-stone-400">
+        <p>© 2026 NutriCoach AI. Dikembangkan secara khusus untuk mendukung kesehatan tanpa diet ekstrem.</p>
+    </footer>
+
+    <!-- Script Logika Utama Aplikasi -->
+    <script>
+        // System Prompt yang diinputkan pengguna, akan dikirim ke Gemini API
+        const systemPrompt = `Kamu adalah AI Nutrition Coach & Smart Diet Companion pribadi yang membantu pengguna menjalani pola makan sehat, nyaman, realistis, dan berkelanjutan tanpa diet ekstrem atau toxic diet culture.
+Tujuan utama:
+- membantu pengguna menurunkan atau menjaga berat badan dengan sehat,
+- membantu memahami pola makan,
+- membantu memilih makanan yang lebih baik,
+- menghitung kalori dan gizi otomatis,
+- memberi rekomendasi makan berdasarkan kondisi kesehatan,
+- memahami hormon dan siklus wanita,
+- membuat pengguna tetap bisa makan enak tanpa merasa tersiksa.
+
+KARAKTER AI
+AI harus: suportif, hangat, realistis, tidak menghakimi, tidak membuat pengguna merasa gagal, berbicara seperti nutrition coach modern dan wellness companion.
+Hindari kalimat: "kamu gagal diet", "jangan makan ini lagi", "makanan ini buruk".
+Gunakan kalimat: "lebih baik dibatasi", "boleh sesekali", "opsi yang lebih aman", "coba alternatif yang lebih ringan", "kita fokus konsistensi jangka panjang".
+
+KEMAMPUAN UTAMA:
+1. Analisis Makanan dari Berbagai Input (Nama menu, deskripsi porsi, dsb).
+2. Perhitungan Gizi otomatis (Estimasi Kalori, Protein, Lemak, Karbohidrat, Gula, Garam/Sodium, Serat, dsb).
+3. Menggunakan data gizi resmi restoran/brand bila ada, atau estimasi berbasis porsi makanan khas Indonesia.
+4. Memahami hormonal & siklus menstruasi wanita dan dampaknya bagi berat badan (water retention), energi, serta cravings.
+5. Smart Health Analysis (Kualitas nutrisi, kesesuaian kondisi medis seperti GERD, PCOS, Hipertensi, Asam Urat, dsb).
+6. Rekomendasi Food Swap yang realistis (Contoh: ayam goreng tepung diganti ayam panggang, bumbu terpisah, es teh manis less sugar).
+
+FORMAT OUTPUT WAJIB:
+Tampilkan respon dengan format Markdown yang rapi, modern, indah, terstruktur dengan subjudul atau ikon menarik:
+1. **Ringkasan Nutrisi Estimasi** (Sajikan dalam bentuk tabel ringkas atau poin berurutan yang memuat Kalori, Protein, Lemak, Karbohidrat, Gula, Sodium, Serat).
+2. **Analisis Coach** (Apa yang sudah bagus hari ini, apa yang perlu diperhatikan seperti kadar garam atau minyak berlebih).
+3. **Health Insight** (Hubungan dengan siklus menstruasi/hormon saat ini atau kondisi medis pengguna).
+4. **Rekomendasi Nyaman Berikutnya** (Saran konkret untuk sisa hari ini atau besok).
+
+PENTING: Selalu tambahkan format data JSON khusus di akhir respon Anda agar aplikasi web bisa menangkap datanya secara terprogram untuk memperbarui grafik progres secara dinamis! Format JSON harus berada di dalam tag khusus agar mudah diparsing:
+\`\`\`json-nutrition
+{
+  "calories": [angka estimasi kalori],
+  "protein": [angka protein dalam gram],
+  "carbs": [angka karbohidrat dalam gram],
+  "fat": [angka lemak dalam gram],
+  "water": [angka dalam liter, default 0 atau 0.3-0.5 jika minum dicatat]
+}
+\`\`\`
+Pastikan Anda merespon ramah dengan bahasa Indonesia.`;
+
+        // Database Keadaan Awal
+        let userState = {
+            apiKey: '',
+            gender: 'Wanita',
+            age: 26,
+            weight: 65,
+            targetWeight: 58,
+            height: 160,
+            activity: 'Sedang',
+            diet: 'Semua Makanan',
+            conditions: [],
+            currentCyclePhase: 'Menstruasi',
+            dailyStats: {
+                calories: 0,
+                protein: 0,
+                carbs: 0,
+                fat: 0,
+                water: 0
+            },
+            chatHistory: []
+        };
+
+        // Siklus Hormon Data
+        const cycleData = {
+            'Menstruasi': 'Fase Menstruasi: Tubuh rentan lelah, sensitif, dan butuh asupan zat besi tinggi. Perbanyak protein hangat, sup kaldu, dan sayuran hijau hangat.',
+            'Folikuler': 'Fase Folikuler: Energi mulai meningkat, metabolisme sedang stabil. Waktu yang tepat untuk fokus pada sayur segar, protein bersih, dan olahraga teratur.',
+            'Ovulasi': 'Fase Ovulasi: Energi berada di puncak! Tingkat kepuasan makan stabil. Bagus untuk makanan berenergi tinggi, lemak sehat (avocado, chia), serat tinggi.',
+            'Luteal (PMS)': 'Fase Luteal (PMS): Berat badan naik sementara akibat retensi air adalah hal normal. Cravings manis meningkat. Coba dark chocolate, pisang, atau yoghurt.'
+        };
+
+        // Inisialisasi Aplikasi saat Load
+        window.addEventListener('load', () => {
+            loadStateFromLocalStorage();
+            lucide.createIcons();
+            updateUI();
+            
+            // Set tanggal hari ini
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('currentDate').innerText = new Date().toLocaleDateString('id-ID', options);
+        });
+
+        // Simpan & Ambil Data dari Local Storage
+        function saveToLocalStorage() {
+            localStorage.setItem('nutricoach_state', JSON.stringify(userState));
+        }
+
+        function loadStateFromLocalStorage() {
+            const saved = localStorage.getItem('nutricoach_state');
+            if (saved) {
+                userState = JSON.parse(saved);
+                // Sinkronkan ke modal input
+                document.getElementById('userGender').value = userState.gender;
+                document.getElementById('userAge').value = userState.age;
+                document.getElementById('userWeight').value = userState.weight;
+                document.getElementById('userTargetWeight').value = userState.targetWeight;
+                document.getElementById('userHeight').value = userState.height;
+                document.getElementById('userActivity').value = userState.activity;
+                document.getElementById('userDiet').value = userState.diet;
+                
+                // Checkbox kondisi
+                document.querySelectorAll('input[name="condition"]').forEach(cb => {
+                    cb.checked = userState.conditions.includes(cb.value);
+                });
+
+                // Restore Chat History jika ada
+                if (userState.chatHistory && userState.chatHistory.length > 0) {
+                    const container = document.getElementById('chatContainer');
+                    // Simpan welcome message saja terlebih dahulu
+                    const welcomeHTML = container.innerHTML;
+                    container.innerHTML = welcomeHTML;
+                    
+                    userState.chatHistory.forEach(msg => {
+                        appendMessageToUI(msg.role, msg.text, false);
+                    });
+                }
+            }
+        }
+
+        // Update Seluruh Komponen UI Utama
+        function updateUI() {
+            // Update Dashboard Gizi
+            document.getElementById('caloriesValue').innerText = Math.round(userState.dailyStats.calories);
+            const calPercentage = Math.min((userState.dailyStats.calories / 2000) * 100, 100);
+            document.getElementById('caloriesBar').style.width = `${calPercentage}%`;
+
+            document.getElementById('waterValue').innerText = userState.dailyStats.water.toFixed(1);
+            const waterPercentage = Math.min((userState.dailyStats.water / 2.5) * 100, 100);
+            document.getElementById('waterBar').style.width = `${waterPercentage}%`;
+
+            document.getElementById('proteinText').innerText = `${Math.round(userState.dailyStats.protein)} / 120g`;
+            document.getElementById('proteinBar').style.width = `${Math.min((userState.dailyStats.protein / 120) * 100, 100)}%`;
+
+            document.getElementById('carbsText').innerText = `${Math.round(userState.dailyStats.carbs)} / 250g`;
+            document.getElementById('carbsBar').style.width = `${Math.min((userState.dailyStats.carbs / 250) * 100, 100)}%`;
+
+            document.getElementById('fatText').innerText = `${Math.round(userState.dailyStats.fat)} / 65g`;
+            document.getElementById('fatBar').style.width = `${Math.min((userState.dailyStats.fat / 65) * 100, 100)}%`;
+
+            // Update Cycle
+            document.getElementById('cycleStatusBadge').innerText = userState.currentCyclePhase;
+            document.getElementById('cycleAdviseText').innerHTML = `<strong>Fase ${userState.currentCyclePhase}:</strong> ${cycleData[userState.currentCyclePhase]}`;
+            
+            // Ubah style tombol siklus aktif
+            document.querySelectorAll('.phase-btn').forEach(btn => {
+                btn.className = "phase-btn p-2 rounded-xl text-[10px] font-bold border transition-all bg-stone-50 border-stone-200 text-stone-600";
+            });
+            const activeBtnMap = {
+                'Menstruasi': 'phaseBtn-Menstruasi',
+                'Folikuler': 'phaseBtn-Folikuler',
+                'Ovulasi': 'phaseBtn-Ovulasi',
+                'Luteal (PMS)': 'phaseBtn-Luteal'
+            };
+            const activeBtnId = activeBtnMap[userState.currentCyclePhase];
+            if (activeBtnId) {
+                document.getElementById(activeBtnId).className = "phase-btn p-2 rounded-xl text-[10px] font-bold border transition-all bg-rose-50 border-rose-200 text-rose-700";
+            }
+
+            // Update Card Profil
+            document.getElementById('profileGoalText').innerText = userState.weight > userState.targetWeight ? "Menurunkan Berat Badan" : "Menjaga Berat Badan";
+            document.getElementById('pWeight').innerText = userState.weight;
+            document.getElementById('pTargetWeight').innerText = userState.targetWeight;
+            document.getElementById('pConditions').innerText = userState.conditions.length > 0 ? userState.conditions.join(', ') : 'Tidak ada';
+            document.getElementById('pActivity').innerText = userState.activity;
+            document.getElementById('pDiet').innerText = userState.diet;
+
+            // API Key Badge Indicator
+            const apiBadge = document.getElementById('apiBadge');
+            if (userState.apiKey) {
+                apiBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> API Key Aktif`;
+                apiBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 transition-all hover:bg-emerald-100";
+            } else {
+                apiBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> Setup API Key`;
+                apiBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 transition-all hover:bg-amber-100";
+            }
+        }
+
+        // Navigasi & Modal Controls
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        // Menyimpan Pengaturan Profil
+        function saveUserProfile() {
+            userState.gender = document.getElementById('userGender').value;
+            userState.age = parseInt(document.getElementById('userAge').value) || 26;
+            userState.weight = parseInt(document.getElementById('userWeight').value) || 65;
+            userState.targetWeight = parseInt(document.getElementById('userTargetWeight').value) || 58;
+            userState.height = parseInt(document.getElementById('userHeight').value) || 160;
+            userState.activity = document.getElementById('userActivity').value;
+            userState.diet = document.getElementById('userDiet').value;
+
+            // Ambil checkbox kondisi medis
+            const checkedConditions = [];
+            document.querySelectorAll('input[name="condition"]:checked').forEach(cb => {
+                checkedConditions.push(cb.value);
+            });
+            userState.conditions = checkedConditions;
+
+            saveToLocalStorage();
+            updateUI();
+            closeModal('profileModal');
+            
+            // Tambahkan notifikasi di chat bahwa profil diubah
+            appendMessageToUI('system', `🔄 Profil diperbarui: Anda memiliki kondisi medis (${userState.conditions.join(', ') || 'Tidak Ada'}) dan pola makan ${userState.diet}. Coach akan menggunakannya untuk analisis berikutnya!`, false);
+        }
+
+        // Menyimpan API Key Google AI Studio
+        function saveApiKey() {
+            const key = document.getElementById('apiKeyInput').value.trim();
+            if (key) {
+                userState.apiKey = key;
+                saveToLocalStorage();
+                updateUI();
+                closeModal('apiModal');
+                appendMessageToUI('system', '🔑 Google AI Studio API Key berhasil dihubungkan! Anda sekarang bisa mengobrol langsung dengan mesin pintar AI Pro secara real-time.', false);
+            } else {
+                alert('Silakan masukkan API Key yang valid.');
+            }
+        }
+
+        // Mengganti Fase Siklus Wanita
+        function setCyclePhase(phase) {
+            userState.currentCyclePhase = phase;
+            saveToLocalStorage();
+            updateUI();
+        }
+
+        // Fungsi Cepat Mengisi Chat dari Tombol Rekomendasi
+        function fillAndSend(text) {
+            document.getElementById('userInput').value = text;
+            document.getElementById('chatForm').dispatchEvent(new Event('submit'));
+        }
+
+        // Bersihkan Riwayat Chat
+        function clearChatHistory() {
+            if (confirm('Apakah Anda yakin ingin menghapus seluruh riwayat obrolan dan mereset grafik gizi hari ini?')) {
+                userState.chatHistory = [];
+                userState.dailyStats = { calories: 0, protein: 0, carbs: 0, fat: 0, water: 0 };
+                saveToLocalStorage();
+                
+                // Clear UI
+                const container = document.getElementById('chatContainer');
+                container.innerHTML = `
+                    <div class="flex gap-3 max-w-[85%]">
+                        <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-sm flex-shrink-0">🥑</div>
+                        <div class="bg-stone-100 rounded-2xl p-4 text-stone-800 text-sm leading-relaxed rounded-tl-none">
+                            Riwayat dihapus. Tuliskan makananmu hari ini untuk memulai analisis sehat baru! 💚
+                        </div>
+                    </div>
+                `;
+                updateUI();
+            }
+        }
+
+        // Cetak Pesan Baru ke Chat Area
+        function appendMessageToUI(role, text, isMarkdown = true) {
+            const container = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = "flex gap-3 max-w-[85%] " + (role === 'user' ? 'ml-auto flex-row-reverse' : '');
+
+            let avatar = role === 'user' ? '🧑' : '🥑';
+            let bgClass = role === 'user' ? 'bg-emerald-600 text-white rounded-tr-none' : 'bg-stone-100 text-stone-800 rounded-tl-none';
+            
+            if (role === 'system') {
+                avatar = '⚙️';
+                bgClass = 'bg-amber-50 text-amber-900 border border-amber-200 rounded-lg text-xs w-full';
+                messageDiv.className = "flex gap-3 w-full my-2 justify-center";
+            }
+
+            // Bersihkan format khusus JSON dari output chat yang ditampilkan agar terlihat bersih bagi pengguna
+            let cleanText = text;
+            const jsonRegex = /```json-nutrition[\s\S]*?```/;
+            cleanText = cleanText.replace(jsonRegex, '').trim();
+
+            // Sederhana mengganti pola markdown menjadi HTML
+            let formattedText = cleanText;
+            if (isMarkdown && role !== 'system') {
+                formattedText = parseMarkdown(cleanText);
+            }
+
+            messageDiv.innerHTML = `
+                <div class="w-8 h-8 rounded-full ${role === 'user' ? 'bg-emerald-200' : 'bg-stone-200'} flex items-center justify-center text-sm flex-shrink-0">${avatar}</div>
+                <div class="${bgClass} rounded-2xl p-4 text-sm leading-relaxed shadow-sm">
+                    ${formattedText}
+                </div>
+            `;
+            
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Markdown Parser Sederhana untuk mempercantik chat
+        function parseMarkdown(text) {
+            let html = text;
+            // Bold
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            // Lists
+            html = html.replace(/^\s*-\s*(.*)$/gmi, '<li class="ml-4 list-disc">$1</li>');
+            html = html.replace(/^\s*\*\s*(.*)$/gmi, '<li class="ml-4 list-disc">$1</li>');
+            // Headers
+            html = html.replace(/^\s*###\s*(.*)$/gmi, '<h4 class="font-bold text-base mt-3 mb-1 text-emerald-800">$1</h4>');
+            html = html.replace(/^\s*##\s*(.*)$/gmi, '<h3 class="font-bold text-lg mt-4 mb-2 text-emerald-900 border-b pb-1">$1</h3>');
+            // Paragraph breaks
+            html = html.replace(/\n/g, '<br>');
+            return html;
+        }
+
+        // Input & Kirim Pesan ke Gemini API
+        async function handleSendMessage(event) {
+            event.preventDefault();
+            const inputField = document.getElementById('userInput');
+            const userMsg = inputField.value.trim();
+            if (!userMsg) return;
+
+            // Tambahkan pesan user ke UI
+            appendMessageToUI('user', userMsg, false);
+            inputField.value = '';
+
+            // Masukkan ke riwayat
+            userState.chatHistory.push({ role: 'user', text: userMsg });
+
+            // Tampilkan Indikator Mengetik AI
+            const container = document.getElementById('chatContainer');
+            const typingDiv = document.createElement('div');
+            typingDiv.id = "typingIndicator";
+            typingDiv.className = "flex gap-3 max-w-[85%]";
+            typingDiv.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center text-sm flex-shrink-0">🥑</div>
+                <div class="bg-stone-100 text-stone-500 rounded-2xl p-4 text-xs italic flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-stone-400 animate-bounce"></span>
+                    <span class="w-2 h-2 rounded-full bg-stone-400 animate-bounce" style="animation-delay: 0.2s"></span>
+                    <span class="w-2 h-2 rounded-full bg-stone-400 animate-bounce" style="animation-delay: 0.4s"></span>
+                    Coach sedang menganalisis nutrisi Anda...
+                </div>
+            `;
+            container.appendChild(typingDiv);
+            container.scrollTop = container.scrollHeight;
+
+            try {
+                let aiResponseText = "";
+                
+                // Cek apakah API Key ada
+                if (userState.apiKey) {
+                    aiResponseText = await callGeminiAPI(userMsg);
+                } else {
+                    // DEMO MODE - Jika API Key belum terpasang
+                    await new Promise(resolve => setTimeout(resolve, 2000)); // Simulasi delay
+                    aiResponseText = getMockResponse(userMsg);
+                }
+
+                // Hapus Typing Indicator
+                const indicator = document.getElementById('typingIndicator');
+                if (indicator) indicator.remove();
+
+                // Tampilkan Response AI ke UI
+                appendMessageToUI('model', aiResponseText, true);
+                userState.chatHistory.push({ role: 'model', text: aiResponseText });
+
+                // Ekstrak data JSON dari response untuk memperbarui progress gizi di dasbor
+                extractNutritionData(aiResponseText);
+                
+                // Simpan keadaan terbaru
+                saveToLocalStorage();
+
+            } catch (error) {
+                console.error(error);
+                const indicator = document.getElementById('typingIndicator');
+                if (indicator) indicator.remove();
+                
+                appendMessageToUI('system', `❌ Terjadi kesalahan koneksi atau API Key salah: ${error.message}. Pastikan koneksi internet lancar dan API Key Anda valid di Google AI Studio.`, false);
+            }
+        }
+
+        // Memanggil API Google Gemini
+        async function callGeminiAPI(userMessage) {
+            // Gabungkan system prompt, profil saat ini, dan seluruh riwayat chat
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${userState.apiKey}`;
+            
+            // Format konteks profil pengguna saat ini agar dipahami AI
+            const userContext = `
+INFORMASI PENGGUNA SAAT INI:
+- Jenis Kelamin: ${userState.gender}
+- Siklus Hormon Saat Ini: Fase ${userState.currentCyclePhase} (Penting untuk diet wanita & mood)
+- Kondisi Medis: ${userState.conditions.length > 0 ? userState.conditions.join(', ') : 'Tidak ada keluhan medis'}
+- Usia: ${userState.age} tahun, Berat: ${userState.weight} kg, Tinggi: ${userState.height} cm
+- Target Berat Badan: ${userState.targetWeight} kg
+- Pola Makan: ${userState.diet}
+- Aktivitas Harian: ${userState.activity}
+`;
+
+            // Konversi riwayat obrolan ke format payload API Gemini
+            const contents = [];
+            
+            // Masukkan pesan system instruksi dan konteks user di awal sebagai panduan sistem
+            contents.push({
+                role: 'user',
+                parts: [{ text: `${systemPrompt}\n\n${userContext}\n\nHalo Coach!` }]
+            });
+            contents.push({
+                role: 'model',
+                parts: [{ text: `Halo! Aku telah memahami profil kesehatan Anda, termasuk kondisi medis: ${userState.conditions.join(', ') || 'Tidak ada'} dan fase siklus hormon Anda: ${userState.currentCyclePhase}. Aku siap membimbing Anda dengan pendekatan suportif tanpa toxic diet culture!` }]
+            });
+
+            // Tambahkan sisa riwayat chat dari local storage
+            userState.chatHistory.forEach(msg => {
+                contents.push({
+                    role: msg.role === 'model' ? 'model' : 'user',
+                    parts: [{ text: msg.text }]
+                });
+            });
+
+            // Tambahkan pesan terakhir user jika belum ada
+            if (contents[contents.length - 1].parts[0].text !== userMessage) {
+                contents.push({
+                    role: 'user',
+                    parts: [{ text: userMessage }]
+                });
+            }
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    contents: contents
+                })
+            });
+
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.error?.message || 'Gagal memanggil API.');
+            }
+
+            const resData = await response.json();
+            return resData.candidates[0].content.parts[0].text;
+        }
+
+        // Ekstraksi data JSON dari respons untuk memperbarui dasbor
+        function extractNutritionData(text) {
+            try {
+                const match = text.match(/```json-nutrition([\s\S]*?)```/);
+                if (match && match[1]) {
+                    const data = JSON.parse(match[1].trim());
+                    
+                    // Akumulasikan ke data harian
+                    if (data.calories) userState.dailyStats.calories += parseFloat(data.calories);
+                    if (data.protein) userState.dailyStats.protein += parseFloat(data.protein);
+                    if (data.carbs) userState.dailyStats.carbs += parseFloat(data.carbs);
+                    if (data.fat) userState.dailyStats.fat += parseFloat(data.fat);
+                    if (data.water) userState.dailyStats.water += parseFloat(data.water);
+
+                    updateUI();
+                }
+            } catch (err) {
+                console.warn('Gagal memparsing JSON gizi dari AI response. Ini wajar jika AI tidak menyertakan JSON gizi.', err);
+            }
+        }
+
+        // Mock Response (Simulasi jika API Key Belum Dipasang)
+        function getMockResponse(userMessage) {
+            // Simulasi respon berbasis kata kunci sederhana agar terasa interaktif saat dicoba pertama kali
+            const lMessage = userMessage.toLowerCase();
+            let calories = 0, protein = 0, carbs = 0, fat = 0, water = 0;
+
+            let response = "";
+
+            if (lMessage.includes('uduk') || lMessage.includes('nasi uduk')) {
+                calories = 450; protein = 12; carbs = 65; fat = 18; water = 0.3;
+                response = `### 🍳 Analisis Menu: Nasi Uduk Komplit
+Pilihan sarapan yang sangat lezat dan membangkitkan energi di pagi hari!
+
+### **Ringkasan Nutrisi Estimasi**
+| Nutrisi | Estimasi |
+| :--- | :--- |
+| **Kalori** | ~450 kcal |
+| **Protein** | ~12 g |
+| **Karbohidrat** | ~65 g |
+| **Lemak** | ~18 g |
+| **Gula** | ~2 g |
+| **Sodium** | ~550 mg (cukup tinggi) |
+
+### **Analisis Coach**
+Nasi uduk yang dimasak dengan santan memiliki rasa gurih yang memuaskan. Karbohidratnya cukup tinggi sehingga memberi dorongan energi cepat. Namun, lauk pendamping seperti bakwan goreng atau telur dadar goreng meningkatkan lemak jenuh dan sodium hari ini.
+
+### **Health Insight**
+Karena fase siklusmu saat ini adalah **${userState.currentCyclePhase}**, tubuh cenderung menahan air. Kandungan sodium dari nasi uduk ini bisa membuat perut terasa sedikit kembung hari ini. Jangan khawatir, ini sangat normal!
+
+### **Rekomendasi Nyaman Berikutnya**
+- **Food Swap Ringan:** Untuk makan siang nanti, yuk pilih menu yang lebih ringan berserat dan tinggi protein kukus/panggang, misalnya nasi merah dengan pepes ayam dan sayur bening bayam.
+- **Hidrasi:** Pastikan minum air putih minimal 1 gelas ekstra siang ini untuk membantu membuang kelebihan sodium.
+
+\`\`\`json-nutrition
+{
+  "calories": 450,
+  "protein": 12,
+  "carbs": 65,
+  "fat": 18,
+  "water": 0.3
+}
+\`\`\`
+*(Catatan: Ini adalah respon simulasi demo. Masukkan API Key Anda di pojok kanan atas untuk mendapatkan tanggapan kecerdasan buatan Gemini asli sesuai profil lengkap Anda!)*`;
+            } else if (lMessage.includes('geprek')) {
+                calories = 620; protein = 28; carbs = 58; fat = 32; water = 0.4;
+                response = `### 🔥 Analisis Menu: Ayam Geprek Sambal Bawang
+Pilihan yang sangat memuaskan bagi pencinta makanan pedas! Proteinnya sangat tinggi.
+
+### **Ringkasan Nutrisi Estimasi**
+| Nutrisi | Estimasi |
+| :--- | :--- |
+| **Kalori** | ~620 kcal |
+| **Protein** | ~28 g |
+| **Karbohidrat** | ~58 g |
+| **Lemak** | ~32 g (tinggi) |
+| **Sodium** | ~850 mg |
+
+### **Analisis Coach**
+Kelebihan utama menu ini adalah kandungan proteinnya yang mantap (~28g) dari ayam. Namun, proses penggorengan tepung (*deep fried*) dan siraman minyak panas pada sambal membuat kalori serta lemak jenuhnya melonjak signifikan.
+
+### **Health Insight**
+${userState.conditions.includes('GERD') ? '⚠️ **Perhatian Asam Lambung (GERD):** Kombinasi minyak gorengan dan cabai level tinggi berpotensi memicu naiknya asam lambung atau rasa terbakar di dada. Coba batasi tingkat kepedasannya ya.' : 'Bagi pencinta pedas, menu ini sangat meningkatkan mood. Jaga agar tidak terlalu sering dikonsumsi berturut-turut.'}
+
+### **Rekomendasi Nyaman Berikutnya**
+- **Food Swap:** Lain kali, kamu bisa memesan "Ayam Geprek tanpa tepung (ayam bakar/ungkep yang digeprek)" untuk memangkas hingga 200 kalori lemak jenuh dengan rasa yang tetap lezat!
+- **Sisa Hari Ini:** Seimbangkan makan malam dengan porsi yang lebih ramah sayur dan buah tanpa minyak.
+
+\`\`\`json-nutrition
+{
+  "calories": 620,
+  "protein": 28,
+  "carbs": 58,
+  "fat": 32,
+  "water": 0.4
+}
+\`\`\`
+*(Catatan: Ini adalah respon simulasi demo. Masukkan API Key Anda di pojok kanan atas untuk mendapatkan tanggapan kecerdasan buatan Gemini asli sesuai profil lengkap Anda!)*`;
+            } else {
+                // Default fallback response
+                calories = 150; protein = 5; carbs = 20; fat = 6; water = 0.2;
+                response = `### 🥑 Analisis Menu Camilan Anda
+Terima kasih sudah mencatat makananmu dengan jujur ke Coach! Konsistensi mencatat adalah langkah luar biasa menuju gaya hidup berkelanjutan.
+
+### **Ringkasan Nutrisi Estimasi**
+*   **Kalori:** ~150 kcal
+*   **Protein:** ~5 g
+*   **Karbohidrat:** ~20 g
+*   **Lemak:** ~6 g
+*   **Serat:** ~1.5 g
+
+### **Analisis Coach**
+Porsinya sudah berada dalam batas aman untuk camilan pengganjal lapar. Kita tidak perlu terlalu ketat memangkas makanan, yang terpenting adalah kontrol porsi dan keseimbangan jenis makanan sepanjang hari.
+
+### **Health Insight**
+Menjaga energi tetap stabil sepanjang hari sangat penting, terutama pada fase **${userState.currentCyclePhase}** saat metabolisme tubuh Anda bekerja lebih aktif atau butuh ketenangan ekstra.
+
+### **Rekomendasi Nyaman Berikutnya**
+- Jika malam ini masih merasa lapar, pilihlah alternatif ringan tinggi serat seperti potongan buah apel dengan sedikit selai kacang, atau semangkuk yoghurt plain dingin yang lezat.
+
+\`\`\`json-nutrition
+{
+  "calories": 150,
+  "protein": 5,
+  "carbs": 20,
+  "fat": 6,
+  "water": 0.2
+}
+\`\`\`
+*(Catatan: Ini adalah respon simulasi demo. Masukkan API Key Anda di pojok kanan atas untuk mendapatkan tanggapan kecerdasan buatan Gemini asli sesuai profil lengkap Anda!)*`;
+            }
+
+            return response;
+        }
+    </script>
+</body>
+</html>
