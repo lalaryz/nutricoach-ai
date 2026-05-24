@@ -5,175 +5,94 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NutriCoach AI Premium</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f7f9f6; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f7f9f6; }</style>
 </head>
 <body class="min-h-screen pb-24">
 
-    <!-- HEADER -->
     <header class="bg-white sticky top-0 z-40 border-b border-emerald-100">
-        <div class="max-w-2xl mx-auto px-4 py-3 flex justify-between items-center">
+        <div class="max-w-xl mx-auto px-4 py-3 flex justify-between items-center">
             <h1 class="font-bold text-slate-800">NutriCoach <span class="text-emerald-600">AI</span></h1>
-            <div class="flex gap-2">
-                <button onclick="openHistoryModal()" class="w-9 h-9 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center"><i class="fa-solid fa-chart-line"></i></button>
-                <button onclick="openApiKeyModal()" class="bg-slate-900 text-white px-3 py-2 rounded-xl text-xs font-bold">API Key</button>
-            </div>
+            <button onclick="document.getElementById('profile-modal').classList.remove('hidden')" class="text-xs bg-slate-900 text-white px-3 py-2 rounded-xl">Profil</button>
         </div>
     </header>
 
-    <main class="max-w-2xl mx-auto px-4 py-6 space-y-6">
-        <!-- DASHBOARD GIZI -->
-        <section class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
-            <h2 class="text-xs font-bold text-slate-400 uppercase mb-4">Ringkasan Hari Ini</h2>
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div class="bg-emerald-50 p-4 rounded-2xl">
-                    <p class="text-[10px] text-emerald-600 font-bold uppercase">Kalori</p>
-                    <p class="text-xl font-bold"><span id="cur-cal">0</span> <span class="text-xs text-slate-400">/2000</span></p>
-                </div>
-                <div class="bg-blue-50 p-4 rounded-2xl">
-                    <p class="text-[10px] text-blue-600 font-bold uppercase">Air</p>
-                    <p class="text-xl font-bold"><span id="cur-water">0</span> <span class="text-xs text-slate-400">ml</span></p>
-                </div>
+    <main class="max-w-xl mx-auto px-4 py-6 space-y-6">
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-emerald-50">
+            <h2 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Dashboard Nutrisi</h2>
+            <div id="hormone-badge" class="mt-2 inline-block bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full text-[10px] font-bold">Fase: Loading...</div>
+            <div class="grid grid-cols-4 gap-2 mt-4 text-center">
+                <div class="bg-slate-50 p-2 rounded-xl"><span id="v-cal" class="block font-bold">0</span><small class="text-[8px]">Cal</small></div>
+                <div class="bg-slate-50 p-2 rounded-xl"><span id="v-prot" class="block font-bold">0</span><small class="text-[8px]">Prot</small></div>
+                <div class="bg-slate-50 p-2 rounded-xl"><span id="v-fat" class="block font-bold">0</span><small class="text-[8px]">Fat</small></div>
+                <div class="bg-slate-50 p-2 rounded-xl"><span id="v-sod" class="block font-bold">0</span><small class="text-[8px]">Sod</small></div>
             </div>
-            <div class="grid grid-cols-3 gap-2 text-center text-[10px]">
-                <div class="bg-slate-50 p-2 rounded-lg">Karb<br><span id="cur-carb" class="font-bold">0</span>g</div>
-                <div class="bg-slate-50 p-2 rounded-lg">Prot<br><span id="cur-prot" class="font-bold">0</span>g</div>
-                <div class="bg-slate-50 p-2 rounded-lg">Lemak<br><span id="cur-fat" class="font-bold">0</span>g</div>
-            </div>
-        </section>
+        </div>
 
-        <!-- CHAT -->
-        <section class="bg-white rounded-3xl border border-slate-100 shadow-sm flex flex-col h-[400px]">
-            <div id="chat-messages" class="flex-1 overflow-y-auto p-5 space-y-4 text-xs text-slate-700"></div>
-            <div class="p-4 border-t flex gap-2">
-                <textarea id="user-input" class="flex-1 bg-slate-50 p-3 rounded-xl outline-none text-xs" placeholder="Makan apa hari ini?"></textarea>
-                <button onclick="sendMessage()" class="w-10 bg-emerald-600 text-white rounded-xl"><i class="fa-solid fa-paper-plane"></i></button>
-            </div>
-        </section>
+        <div id="chat" class="space-y-4 h-[350px] overflow-y-auto px-2"></div>
     </main>
 
-    <!-- FOOTER PROFILE -->
-    <footer class="fixed bottom-0 inset-x-0 p-4 bg-white border-t z-30">
-        <button onclick="openProfileModal()" class="w-full max-w-2xl mx-auto bg-slate-900 text-white p-4 rounded-2xl text-xs font-bold flex justify-between">
-            <span>Edit Profil Kesehatan</span>
-            <i class="fa-solid fa-user-pen"></i>
-        </button>
+    <footer class="fixed bottom-0 w-full bg-white p-4 border-t">
+        <div class="max-w-xl mx-auto flex gap-2">
+            <input type="file" id="img-input" class="hidden" accept="image/*">
+            <button onclick="document.getElementById('img-input').click()" class="bg-slate-100 px-4 rounded-xl">📷</button>
+            <input id="user-input" class="flex-1 bg-slate-50 p-4 rounded-xl text-xs" placeholder="Ceritakan makanmu hari ini...">
+            <button onclick="handleSend()" class="bg-emerald-600 text-white px-6 rounded-xl font-bold">Kirim</button>
+        </div>
     </footer>
 
-    <!-- MODAL PROFIL -->
-    <div id="profile-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all">
-        <div class="bg-white rounded-3xl w-full max-w-sm p-6 max-h-[90vh] overflow-y-auto text-xs space-y-4">
-            <h3 class="font-bold text-lg">Profil Kesehatan</h3>
-            <div><label class="font-bold">Jenis Kelamin</label><select id="p-gender" class="w-full p-3 bg-slate-50 rounded-xl border"><option>Perempuan</option><option>Laki-laki</option></select></div>
-            <div class="grid grid-cols-2 gap-2">
-                <div><label class="font-bold">Usia</label><input type="number" id="p-age" class="w-full p-3 bg-slate-50 rounded-xl border"></div>
-                <div><label class="font-bold">Tinggi (cm)</label><input type="number" id="p-height" class="w-full p-3 bg-slate-50 rounded-xl border"></div>
-            </div>
-            <div><label class="font-bold">Berat Sekarang (kg)</label><input type="number" id="p-weight" class="w-full p-3 bg-slate-50 rounded-xl border"></div>
-            <div><label class="font-bold">Target BB (kg)</label><input type="number" id="p-target" class="w-full p-3 bg-slate-50 rounded-xl border"></div>
-            
-            <!-- Checklist Kondisi Medis -->
-            <div>
-                <label class="font-bold block mb-2">Kondisi Medis</label>
-                <div class="space-y-2" id="medical-checklist">
-                    <label class="flex items-center gap-2"><input type="checkbox" value="Kolesterol Tinggi"> Kolesterol Tinggi</label>
-                    <label class="flex items-center gap-2"><input type="checkbox" value="Diabetes"> Diabetes</label>
-                    <label class="flex items-center gap-2"><input type="checkbox" value="Hipertensi"> Hipertensi</label>
-                    <label class="flex items-center gap-2"><input type="checkbox" value="PCOS"> PCOS</label>
-                    <label class="flex items-center gap-2"><input type="checkbox" value="GERD"> GERD</label>
-                </div>
-            </div>
-            <button onclick="saveProfile()" class="w-full py-4 bg-emerald-600 text-white rounded-xl font-bold">Simpan</button>
+    <div id="profile-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white p-6 rounded-3xl w-full max-w-sm space-y-4">
+            <h3 class="font-bold">Pengaturan Profil</h3>
+            <select id="p-fase" class="w-full p-3 bg-slate-50 rounded-xl">
+                <option>Folikular</option><option>Ovulasi</option><option>Luteal</option><option>Menstruasi</option>
+            </select>
+            <input id="p-kondisi" class="w-full p-3 bg-slate-50 rounded-xl" placeholder="Kondisi Medis (misal: GERD)">
+            <button onclick="saveProfile()" class="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold">Simpan</button>
         </div>
-    </div>
-
-    <!-- MODAL HISTORI -->
-    <div id="history-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all">
-        <div class="bg-white rounded-3xl w-full max-w-sm p-6 text-xs">
-            <h3 class="font-bold text-lg mb-4">Riwayat Kalori</h3>
-            <div id="history-list" class="space-y-2"></div>
-            <button onclick="document.getElementById('history-modal').classList.add('opacity-0', 'pointer-events-none')" class="w-full mt-4 py-3 bg-slate-100 rounded-xl">Tutup</button>
-        </div>
-    </div>
-
-    <!-- MODAL API -->
-    <div id="api-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all">
-        <div class="bg-white rounded-3xl w-full max-w-sm p-6"><h3 class="font-bold mb-4">API Key</h3><input type="password" id="api-key-input" class="w-full p-3 bg-slate-50 rounded-xl mb-4 text-xs"><button onclick="saveApiKey()" class="w-full py-3 bg-emerald-600 text-white rounded-xl">Simpan</button></div>
     </div>
 
     <script>
-        // Data Handling
-        function getDb() { return JSON.parse(localStorage.getItem('nutri_db') || '{}'); }
-        function saveDb(db) { localStorage.setItem('nutri_db', JSON.stringify(db)); }
-        
-        function updateUI() {
-            const date = new Date().toISOString().split('T')[0];
-            const db = getDb();
-            const today = db[date] || {cal:0, water:0, carb:0, prot:0, fat:0};
-            document.getElementById('cur-cal').innerText = today.cal;
-            document.getElementById('cur-water').innerText = today.water;
-            document.getElementById('cur-carb').innerText = today.carb;
-            document.getElementById('cur-prot').innerText = today.prot;
-            document.getElementById('cur-fat').innerText = today.fat;
-        }
+        // Init
+        const getProfile = () => JSON.parse(localStorage.getItem('user_profile') || '{"fase":"Folikular", "kondisi":"tidak ada"}');
+        const updateUI = () => document.getElementById('hormone-badge').innerText = "Fase: " + getProfile().fase;
+        updateUI();
 
         function saveProfile() {
-            const profile = {
-                gender: document.getElementById('p-gender').value,
-                age: document.getElementById('p-age').value,
-                height: document.getElementById('p-height').value,
-                weight: document.getElementById('p-weight').value,
-                target: document.getElementById('p-target').value,
-                conditions: Array.from(document.querySelectorAll('#medical-checklist input:checked')).map(cb => cb.value)
-            };
-            localStorage.setItem('user_profile', JSON.stringify(profile));
-            document.getElementById('profile-modal').classList.add('opacity-0', 'pointer-events-none');
+            localStorage.setItem('user_profile', JSON.stringify({ fase: document.getElementById('p-fase').value, kondisi: document.getElementById('p-kondisi').value }));
+            document.getElementById('profile-modal').classList.add('hidden');
+            updateUI();
         }
 
-        async function sendMessage() {
+        async function handleSend() {
             const input = document.getElementById('user-input');
-            const msg = input.value;
-            if(!msg) return;
+            const apiKey = localStorage.getItem('gemini_api_key') || 'ISI_API_KEY_KAMU';
+            if(!input.value) return;
 
-            const apiKey = localStorage.getItem('gemini_api_key');
-            const profile = localStorage.getItem('user_profile');
+            document.getElementById('chat').innerHTML += `<div class="bg-emerald-600 text-white p-3 rounded-2xl ml-auto w-max text-xs">${input.value}</div>`;
+            
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    contents: [{parts: [{text: `Role: Nutrition Coach. Profil: ${JSON.stringify(getProfile())}. Analisis: ${input.value}. Output Wajib: Akhiri dengan JSON format: {"cal":0, "prot":0, "fat":0, "sod":0}`}]}]
+                })
+            });
 
-            document.getElementById('chat-messages').innerHTML += `<div class="bg-emerald-600 text-white p-3 rounded-2xl self-end text-xs">${msg}</div>`;
-            input.value = '';
-
-            try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        contents: [{parts: [{text: `Role: NutriCoach. User Profile: ${profile}. Analisis makanan ini: ${msg}. Format: Berikan penjelasan dan JSON gizi {cal, carb, prot, fat, water}.`}]}]
-                    })
-                });
-                const res = await response.json();
-                const text = res.candidates[0].content.parts[0].text;
-                document.getElementById('chat-messages').innerHTML += `<div class="bg-slate-100 p-3 rounded-2xl text-xs">${text}</div>`;
-                // Logic update DB di sini perlu integrasi JSON
-            } catch(e) {
-                document.getElementById('chat-messages').innerHTML += `<div class="bg-rose-50 p-3 rounded-2xl text-xs">Error: Periksa API Key Anda.</div>`;
+            const data = await response.json();
+            const text = data.candidates[0].content.parts[0].text;
+            document.getElementById('chat').innerHTML += `<div class="bg-white p-4 rounded-2xl border text-xs shadow-sm">${text}</div>`;
+            
+            const match = text.match(/\{.*\}/s);
+            if(match) {
+                const n = JSON.parse(match[0]);
+                document.getElementById('v-cal').innerText = n.cal;
+                document.getElementById('v-prot').innerText = n.prot;
+                document.getElementById('v-fat').innerText = n.fat;
+                document.getElementById('v-sod').innerText = n.sod;
             }
+            input.value = '';
         }
-
-        function openHistoryModal() {
-            const db = getDb();
-            const list = document.getElementById('history-list');
-            list.innerHTML = Object.keys(db).map(d => `<div class="flex justify-between border-b p-2"><span>${d}</span><span class="font-bold">${db[d].cal} kkal</span></div>`).join('');
-            document.getElementById('history-modal').classList.remove('opacity-0', 'pointer-events-none');
-        }
-
-        // Init
-        window.onload = updateUI;
-        function openProfileModal() { document.getElementById('profile-modal').classList.remove('opacity-0', 'pointer-events-none'); }
-        function openApiKeyModal() { document.getElementById('api-modal').classList.remove('opacity-0', 'pointer-events-none'); }
-        function saveApiKey() { localStorage.setItem('gemini_api_key', document.getElementById('api-key-input').value); document.getElementById('api-modal').classList.add('opacity-0', 'pointer-events-none'); }
     </script>
 </body>
 </html>
